@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Reflection;
 using System.Windows.Forms;
 
@@ -30,6 +31,79 @@ namespace TaskList
         {
             Log.write("Constructor");
             InitializeComponent();
+        }
+
+        public void saveFormSettings()
+        {
+            Log.write("FormManager saveFormPosition");
+            if (this.WindowState == FormWindowState.Maximized)
+            {
+                Properties.Settings.Default.Location = this.RestoreBounds.Location;
+                Properties.Settings.Default.Size = this.RestoreBounds.Size;
+                Properties.Settings.Default.Maximised = true;
+                Properties.Settings.Default.Minimised = false;
+            }
+            else if (this.WindowState == FormWindowState.Normal)
+            {
+                Properties.Settings.Default.Location = this.Location;
+                Properties.Settings.Default.Size = this.Size;
+                Properties.Settings.Default.Maximised = false;
+                Properties.Settings.Default.Minimised = false;
+            }
+            else
+            {
+                Properties.Settings.Default.Location = this.RestoreBounds.Location;
+                Properties.Settings.Default.Size = this.RestoreBounds.Size;
+                Properties.Settings.Default.Maximised = false;
+                Properties.Settings.Default.Minimised = true;
+            }
+
+            Properties.Settings.Default.mostTop = this.TopMost;
+            Properties.Settings.Default.font = this.treeView.Font;
+
+            Properties.Settings.Default.Save();
+        }
+
+        public void restoreFormSettings()
+        {
+            Log.write("FormManager restoreFormPosition");
+            if (Properties.Settings.Default.firstRun)
+            {
+                Properties.Settings.Default.firstRun = false;
+            }
+            else if (Properties.Settings.Default.Maximised)
+            {
+                this.WindowState = FormWindowState.Maximized;
+                this.Location = Properties.Settings.Default.Location;
+                this.Size = Properties.Settings.Default.Size;
+            }
+            else if (Properties.Settings.Default.Minimised)
+            {
+                this.WindowState = FormWindowState.Minimized;
+                this.Location = Properties.Settings.Default.Location;
+                this.Size = Properties.Settings.Default.Size;
+            }
+            else
+            {
+                this.Location = Properties.Settings.Default.Location;
+                this.Size = Properties.Settings.Default.Size;
+            }
+
+            if (FormManager.IsOnScreen(this) == -1)
+            {
+                this.WindowState = FormWindowState.Normal;
+                this.Left = 100;
+                this.Top = 100;
+                this.Width = 500;
+                this.Height = 500;
+            }
+
+            this.setTopMost(Properties.Settings.Default.mostTop);
+
+            if (Properties.Settings.Default.font != null)
+            {
+                this.treeView.Font = Properties.Settings.Default.font;
+            }
         }
 
         private void TaskList_Load(object sender, EventArgs e)
@@ -89,13 +163,13 @@ namespace TaskList
         private void TaskList_Shown(object sender, EventArgs e)
         {
             Log.write("Show");
-            FormManager.restoreFormPosition(this);
+            this.restoreFormSettings();
         }
 
         private void TaskList_FormClosing(object sender, FormClosingEventArgs e)
         {
             Log.write("Closing");
-            FormManager.saveFormPosition(this);
+            this.saveFormSettings();            
         }
 
         /* UPDATE TREEVIEW */
@@ -109,7 +183,7 @@ namespace TaskList
         private void updatTree()
         {
             Log.write("updatTree");
-            
+
             IntPtr currentAppHandle = Process.GetCurrentProcess().MainWindowHandle;
 
             //process add 
@@ -380,6 +454,44 @@ namespace TaskList
             Point targetPoint = treeView.PointToClient(new Point(e.X, e.Y));
 
             treeView.SelectedNode = treeView.GetNodeAt(targetPoint);
+
+            TreeNode targetNode = treeView.SelectedNode;
+
+            if (targetNode == null) {
+                return;
+            }
+            Rectangle targetNodeBounds = treeView.SelectedNode.Bounds;
+
+            int blockSize = targetNodeBounds.Height / 3;
+
+            bool addNodeUp = (targetPoint.Y < targetNodeBounds.Y + blockSize);
+            bool addNodeIn = (targetNodeBounds.Y + blockSize <= targetPoint.Y && targetPoint.Y < targetNodeBounds.Y + 2 * blockSize);
+            bool addNodeDown = (targetNodeBounds.Y + 2 * blockSize <= targetPoint.Y);
+
+            Graphics g = treeView.CreateGraphics();
+            Pen customPen = new Pen(Color.DimGray, 3) { DashStyle = DashStyle.Dash };
+            Pen customPen2 = new Pen(SystemColors.Control, 3);
+
+            g.DrawLine(customPen2, new Point(0, targetNode.Bounds.Top + 1), new Point(treeView.Width - 4, targetNode.Bounds.Top + 1));
+            g.DrawLine(customPen2, new Point(0, targetNode.Bounds.Bottom - 1), new Point(treeView.Width - 4, targetNode.Bounds.Bottom - 1));
+
+            if (addNodeUp)
+            {
+                g.DrawLine(customPen, new Point(0, targetNode.Bounds.Top+1), new Point(treeView.Width - 4, targetNode.Bounds.Top+1));
+            }
+
+            if (addNodeIn)
+            {
+                
+            }
+
+            if (addNodeDown)
+            {
+                g.DrawLine(customPen, new Point(0, targetNode.Bounds.Bottom-1), new Point(treeView.Width - 4, targetNode.Bounds.Bottom-1));
+            }
+
+            customPen.Dispose();
+            g.Dispose();
         }
 
         private void treeView_DragDrop(object sender, DragEventArgs e)
@@ -389,36 +501,60 @@ namespace TaskList
 
             TreeNode targetNode = treeView.GetNodeAt(targetPoint);
 
+            if (targetNode == null) {
+                return;
+            }
+
             TreeNode draggedNode = (TreeNode)e.Data.GetData(typeof(TreeNode));
 
-            if (!draggedNode.Equals(targetNode) && !ContainsNode(draggedNode, targetNode))
+            if (draggedNode.Equals(targetNode) || ContainsNode(draggedNode, targetNode))
+            {
+                return;
+            }
+
+            Rectangle targetNodeBounds = targetNode.Bounds;
+
+            int blockSize = targetNodeBounds.Height / 3;
+
+            bool addNodeUp = (targetPoint.Y < targetNodeBounds.Y + blockSize);
+            bool addNodeIn = (targetNodeBounds.Y + blockSize <= targetPoint.Y && targetPoint.Y < targetNodeBounds.Y + 2*blockSize);
+            bool addNodeDown = (targetNodeBounds.Y + 2*blockSize <= targetPoint.Y);
+
+
+            if (e.Effect == DragDropEffects.Move)
             {
 
-                if (e.Effect == DragDropEffects.Move)
-                {
-                    
-                    int targetNodePosition =  targetNode.Parent.Nodes.IndexOf(targetNode);
+                draggedNode.Remove();
 
-                    if (targetNode.Parent.Nodes.Count-1 == targetNodePosition) {
-                        targetNodePosition++;
-                    }
+                int targetNodePosition =  targetNode.Parent.Nodes.IndexOf(targetNode);
 
-                    draggedNode.Remove();
-
+                if (addNodeUp) {
                     targetNode.Parent.Nodes.Insert(targetNodePosition, draggedNode);
-
                 }
 
-                else if (e.Effect == DragDropEffects.Copy)
+                if (addNodeIn)
                 {
-                    targetNode.Nodes.Add((TreeNode)draggedNode.Clone());
+                    targetNode.Nodes.Add(draggedNode);
                 }
 
-                targetNode.Expand();
+                if (addNodeDown)
+                {
+                    targetNode.Parent.Nodes.Insert(targetNodePosition+1, draggedNode);
+                }
+
             }
+
+            else if (e.Effect == DragDropEffects.Copy)
+            {
+                targetNode.Nodes.Add((TreeNode)draggedNode.Clone());
+            }
+
+            targetNode.Expand();
+
         }
 
         /* CONTEXT MENU EVENTS */
+
         private void folderToolStripMenuItem_Click(object sender, EventArgs e)
         {
             Log.write("renameToolStripMenuItem_Click");
@@ -572,12 +708,22 @@ namespace TaskList
             }
         }
 
+        private void fontToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Log.write("fontToolStripMenuItem_Click");
+            fontDialog.Font = treeView.Font;
+            if (fontDialog.ShowDialog() != DialogResult.Cancel)
+            {
+                treeView.Font = fontDialog.Font;
+            }
+        }
+
         private void showDesktopToolStripMenuItem_Click(object sender, EventArgs e)
         {
             Log.write("showDesktopToolStripMenuItem_Click");
             TaskManager.ShowDesktop();
         }
 
-
+        
     }
 }

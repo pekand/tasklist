@@ -94,5 +94,16 @@ namespace TaskList.Properties {
                 this["mostTop"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        public global::System.Drawing.Font font {
+            get {
+                return ((global::System.Drawing.Font)(this["font"]));
+            }
+            set {
+                this["font"] = value;
+            }
+        }
     }
 }

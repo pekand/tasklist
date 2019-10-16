@@ -18,7 +18,7 @@ namespace TaskList
         public static Process[] getProcessies()
         {
             Log.write("TaskManager getProcessies");
-            Process[] tasks = System.Diagnostics.Process.GetProcesses();
+            Process[] tasks = System.Diagnostics.Process.GetProcesses().OrderBy(p => p.ProcessName).ToArray();
 
             return tasks;
         }

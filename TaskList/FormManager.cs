@@ -14,6 +14,7 @@ namespace TaskList
 
         public static int IsOnScreen(TaskList form)
         {
+            Log.write("FormManager IsOnScreen");
             Screen[] screens = Screen.AllScreens;
             int i = 0;
             foreach (Screen screen in screens)
@@ -32,6 +33,7 @@ namespace TaskList
 
         public static void saveFormPosition(TaskList form)
         {
+            Log.write("FormManager saveFormPosition");
             if (form.WindowState == FormWindowState.Maximized)
             {
                 Properties.Settings.Default.Location = form.RestoreBounds.Location;
@@ -61,6 +63,7 @@ namespace TaskList
 
         public static void restoreFormPosition(TaskList form)
         {
+            Log.write("FormManager restoreFormPosition");
             if (Properties.Settings.Default.firstRun)
             {
                 Properties.Settings.Default.firstRun = false;
@@ -95,10 +98,6 @@ namespace TaskList
             form.setTopMost(Properties.Settings.Default.mostTop);
         }
 
-        public static Process[] getProcessies() {
-            Process[] tasks = System.Diagnostics.Process.GetProcesses();
-
-            return tasks;
-        } 
+        
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -16,6 +17,7 @@ namespace TaskList
 
         public static void Lock()
         {
+            Log.write("systemManager Lock");
             LockWorkStation();
         }
 
@@ -59,11 +61,13 @@ namespace TaskList
 
         public static void SignOut()
         {
+            Log.write("systemManager SignOut");
             DoExitWin(EWX_LOGOFF);
         }
 
         private static void DoExitWin(int flg)
         {
+            Log.write("systemManager DoExitWin");
             bool ok;
             TokPriv1Luid tp;
             IntPtr hproc = GetCurrentProcess();
@@ -80,12 +84,15 @@ namespace TaskList
 
         public static void ShutDown()
         {
+            Log.write("systemManager ShutDown");
             DoExitWin(EWX_SHUTDOWN);
         }
 
         public static void Restart()
         {
+            Log.write("systemManager Restart");
             DoExitWin(EWX_REBOOT);
         }
+
     }
 }

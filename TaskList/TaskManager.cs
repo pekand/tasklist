@@ -18,6 +18,7 @@ namespace TaskList
 
         public static IDictionary<IntPtr, string> GetOpenWindows()
         {
+            Log.write("TaskManager GetOpenWindows");
             IntPtr shellWindow = GetShellWindow();
             Dictionary<IntPtr, string> windows = new Dictionary<IntPtr, string>();
 
@@ -59,6 +60,7 @@ namespace TaskList
 
         public static string[] GetDesktopWindowsTitles()
         {
+            Log.write("TaskManager GetDesktopWindowsTitles");
             List<string> lstTitles = new List<string>();
 
             foreach (KeyValuePair<IntPtr, string> window in GetOpenWindows())
@@ -78,6 +80,7 @@ namespace TaskList
 
         public static void hideApp(string name)
         {
+            Log.write("TaskManager hideApp");
             IntPtr IntPtr;
             Process[] processRunning = Process.GetProcesses();
             foreach (Process pr in processRunning)
@@ -93,6 +96,7 @@ namespace TaskList
 
         public static void showApp(string name)
         {
+            Log.write("TaskManager showApp");
             IntPtr IntPtr;
             Process[] processRunning = Process.GetProcesses();
             foreach (Process pr in processRunning)
@@ -107,11 +111,13 @@ namespace TaskList
 
         public static void hideApp(IntPtr IntPtr)
         {
+            Log.write("TaskManager hideApp");
             ShowWindow(IntPtr, SW_HIDE);
         }
 
         public static void showApp(IntPtr IntPtr)
         {
+            Log.write("TaskManager showApp");
             ShowWindow(IntPtr, SW_SHOW);
         }
 
@@ -122,6 +128,7 @@ namespace TaskList
 
         public static IntPtr GetProcessesByName(string name)
         {
+            Log.write("TaskManager GetProcessesByName");
             var prc = Process.GetProcessesByName(name);
             if (prc.Length > 0)
             {
@@ -133,6 +140,7 @@ namespace TaskList
 
         public static void setForegroundWindow(IntPtr hWnd)
         {
+            Log.write("TaskManager setForegroundWindow");
             if (TaskManager.isMinimalized(hWnd))
             {
                 ShowWindow(hWnd, SW_SHOWNORMAL);
@@ -152,6 +160,7 @@ namespace TaskList
 
         public static List<Process> getProcessesNames()
         {
+            Log.write("TaskManager getProcessesNames");
             Process[] processRunning = Process.GetProcesses();
 
             List<Process> lstTitles = new List<Process>();
@@ -191,6 +200,7 @@ namespace TaskList
 
         public static Bitmap GetSmallWindowIcon(IntPtr hWnd)
         {
+            Log.write("TaskManager GetSmallWindowIcon");
             uint WM_GETICON = 0x007f;
             IntPtr ICON_BIG = new IntPtr(1);
             IntPtr IDI_APPLICATION = new IntPtr(0x7F00);
@@ -240,6 +250,7 @@ namespace TaskList
 
         public static bool isLive(IntPtr hWnd)
         {
+            Log.write("TaskManager isLive");
             return IsWindow(hWnd);
         }
 
@@ -251,41 +262,47 @@ namespace TaskList
 
         public static bool isMinimalized(IntPtr hWnd)
         {
+            Log.write("TaskManager isMinimalized");
             return IsIconic(hWnd);
         }
 
-        //*******// Minimalize windows
-
-        public static void showDesktop()
+        public static Process[] getProcessies()
         {
-            Type typeShell = Type.GetTypeFromProgID("Shell.Application");
-            object objShell = Activator.CreateInstance(typeShell);
-            typeShell.InvokeMember("MinimizeAll", System.Reflection.BindingFlags.InvokeMethod, null, objShell, null);
+            Log.write("TaskManager getProcessies");
+            Process[] tasks = System.Diagnostics.Process.GetProcesses();
+
+            return tasks;
         }
 
-        //*******// Serialization
+        private const int SW_MAXIMIZE = 3;
+        private const int SW_MINIMIZE = 6;
+       
 
-        public static T Deserialize<T>(this string toDeserialize)
+        public static void ShowDesktop(bool skipCurrentWindow = true)
         {
-            XmlSerializer xmlSerializer = new XmlSerializer(typeof(T));
-            StringReader textReader = new StringReader(toDeserialize);
-            return (T)xmlSerializer.Deserialize(textReader);
+            Log.write("TaskManager ShowDesktop");
+
+            IntPtr handle = Process.GetCurrentProcess().MainWindowHandle;
+
+            IDictionary<IntPtr, string> windowsList = TaskManager.GetOpenWindows();
+
+            foreach (KeyValuePair<IntPtr, string> window in windowsList)
+            {
+                if (handle != window.Key) {
+                    ShowWindow(window.Key, SW_MINIMIZE);
+                }
+            }
         }
 
-        public static string Serialize<T>(this T toSerialize)
+        public static void CloseWindow(IntPtr hWnd)
         {
-            XmlSerializer xmlSerializer = new XmlSerializer(typeof(T));
-            StringWriter textWriter = new StringWriter();
-            xmlSerializer.Serialize(textWriter, toSerialize);
-            return textWriter.ToString();
+            Log.write("TaskManager CloseWindow");
+
+            uint WM_SYSCOMMAND = 0x0112;
+            IntPtr SC_CLOSE = new IntPtr(0xF060);
+            SendMessage(hWnd, WM_SYSCOMMAND, SC_CLOSE, IntPtr.Zero);
         }
 
-        public static void Log(string text)
-        {
-            File.AppendAllText(@"log.txt", text);
-        }
-
-
-
+        
     }
 }

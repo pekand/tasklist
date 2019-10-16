@@ -1,15 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Diagnostics;
 using System.Drawing;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using Shell32;
 
 namespace TaskList
 {
@@ -31,11 +25,13 @@ namespace TaskList
 
         public TaskList()
         {
+            Log.write("Constructor");
             InitializeComponent();
         }
 
         private void TaskList_Load(object sender, EventArgs e)
         {
+            Log.write("Load");
             treeView.BeginUpdate();
 
             this.imageList.ImageSize = new System.Drawing.Size(16, 16);
@@ -79,11 +75,13 @@ namespace TaskList
 
         private void TaskList_Shown(object sender, EventArgs e)
         {
+            Log.write("Show");
             FormManager.restoreFormPosition(this);
         }
 
         private void TaskList_FormClosing(object sender, FormClosingEventArgs e)
         {
+            Log.write("Closing");
             FormManager.saveFormPosition(this);
         }
 
@@ -91,16 +89,18 @@ namespace TaskList
 
         private void update_Tick(object sender, EventArgs e)
         {
+            Log.write("Update");
             this.updatTree();
         }
 
         private void updatTree()
         {
+            Log.write("updatTree");
             //treeView.BeginUpdate();
 
             //process add 
 
-            Process[] processies = FormManager.getProcessies();
+            Process[] processies = TaskManager.getProcessies();
 
             List<TreeNode> toRemoveNodes = new List<TreeNode>();
 
@@ -112,6 +112,11 @@ namespace TaskList
 
                     if (((NodeData)oldNode.Tag).process.Id == process.Id)
                     {
+
+                        if (process.ProcessName != oldNode.Text) {
+                            oldNode.Text = process.ProcessName;
+                        }
+
                         exists = true;
                         break;
                     }
@@ -188,6 +193,12 @@ namespace TaskList
 
                     if (((NodeData)oldNode.Tag).handle == window.Key)
                     {
+
+                        if (window.Value != oldNode.Text)
+                        {
+                            oldNode.Text = window.Value;
+                        }
+
                         exists = true;
                         break;
                     }
@@ -249,18 +260,14 @@ namespace TaskList
 
         /* TREEVIEW EVENTS */
 
-        private void treeView_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void treeView_DoubleClick(object sender, EventArgs e)
-        {
-
-        }
-
         private void treeView_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
         {
+            Log.write("node click");
+
+            if (e.Node != null) {
+                treeView.SelectedNode = e.Node;
+            }
+
             if (e.Node.Tag == null)
             {
                 return;
@@ -283,37 +290,15 @@ namespace TaskList
                 return;
             }
 
-            TaskManager.setForegroundWindow(nodeData.handle);
-        }
-
-        private void treeView_NodeMouseDoubleClick(object sender, TreeNodeMouseClickEventArgs e)
-        {
-            if (e.Node.Tag == null) {
-                return;
+            if (e.Button == MouseButtons.Left) {
+                TaskManager.setForegroundWindow(nodeData.handle);
             }
-
-            NodeData nodeData  = (NodeData)e.Node.Tag;
-
-            
-            if (nodeData == null) {
-                return;
-            }
-
-            if (nodeData.handle ==  IntPtr.Zero) {
-                return;
-            }
-
-            if (!TaskManager.isLive(nodeData.handle)) {
-                return;
-            }
-
-            TaskManager.setForegroundWindow(nodeData.handle);
 
         }
-
 
         private void treeView_MouseClick(object sender, MouseEventArgs e)
         {
+            Log.write("treeView mouse click");
 
             Point targetPoint = treeView.PointToClient(new Point(e.X, e.Y));
 
@@ -326,10 +311,25 @@ namespace TaskList
 
         }
 
+        private void treeView_MouseUp(object sender, MouseEventArgs e)
+        {
+            Log.write("treeView mouse up");
+            if (e.Button == MouseButtons.Right)
+            {
+                treeView.SelectedNode = treeView.GetNodeAt(e.X, e.Y);
+
+                if (treeView.SelectedNode != null)
+                {
+                    contextMenuStrip.Show(treeView, e.Location);
+                }
+            }
+        }
+
         /* DRAG AND DROP EVENTS */
 
         private bool ContainsNode(TreeNode node1, TreeNode node2)
         {
+            Log.write("ContainsNode");
 
             if (node2.Parent == null) return false;
             if (node2.Parent.Equals(node1)) return true;
@@ -339,16 +339,19 @@ namespace TaskList
 
         private void treeView_ItemDrag(object sender, ItemDragEventArgs e)
         {
+            Log.write("treeView_ItemDrag");
             DoDragDrop(e.Item, DragDropEffects.Move);
         }
 
         private void treeView_DragEnter(object sender, DragEventArgs e)
         {
+            Log.write("treeView_DragEnter");
             e.Effect = e.AllowedEffect;
         }
 
         private void treeView_DragOver(object sender, DragEventArgs e)
         {
+            Log.write("treeView_DragOver");
             Point targetPoint = treeView.PointToClient(new Point(e.X, e.Y));
 
             treeView.SelectedNode = treeView.GetNodeAt(targetPoint);
@@ -356,6 +359,7 @@ namespace TaskList
 
         private void treeView_DragDrop(object sender, DragEventArgs e)
         {
+            Log.write("treeView_DragDrop");
             Point targetPoint = treeView.PointToClient(new Point(e.X, e.Y));
 
             TreeNode targetNode = treeView.GetNodeAt(targetPoint);
@@ -389,59 +393,80 @@ namespace TaskList
             }
         }
 
-        /* STRIP MENU EVENTS */
+        /* CONTEXT MENU EVENTS */
         private void closeToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            this.Close();
+            Log.write("closeToolStripMenuItem_Click");
+            if (treeView.SelectedNode == null)
+            {
+                return;
+            }
+
+            NodeData nodeData = (NodeData)treeView.SelectedNode.Tag;
+
+            if (nodeData.handle != IntPtr.Zero) {
+                TaskManager.CloseWindow(nodeData.handle);
+            }
         }
+
+        /* MENU EVENTS */
 
         private void lockToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            Log.write("lockToolStripMenuItem_Click");
             SystemManager.Lock();
         }
 
         private void sleepToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            Log.write("sleepToolStripMenuItem_Click");
             Application.SetSuspendState(PowerState.Suspend, true, true);
         }
 
         private void signOutToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            Log.write("signOutToolStripMenuItem_Click");
             SystemManager.SignOut();
         }
 
         private void hibernateToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            Log.write("hibernateToolStripMenuItem_Click");
             Application.SetSuspendState(PowerState.Hibernate, true, true);
         }
 
         private void restartToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            Log.write("restartToolStripMenuItem_Click");
             SystemManager.Restart();
         }
 
         private void shutdownToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            Log.write("shutdownToolStripMenuItem_Click");
             SystemManager.ShutDown();
         }
 
         public void setTopMost(bool chcecked)
         {
+            Log.write("setTopMost");
             this.TopMost = chcecked;
             alwaysOnTopToolStripMenuItem.Checked = chcecked;
         }
 
         private void alwaysOnTopToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            Log.write("alwaysOnTopToolStripMenuItem_Click");
             this.TopMost = !this.TopMost;
             alwaysOnTopToolStripMenuItem.Checked = this.TopMost;
         }
 
         private void showDesktopToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Shell32.Shell shell = new Shell32.Shell();
-            shell.ToggleDesktop();
-            this.WindowState = FormWindowState.Normal;
+            Log.write("showDesktopToolStripMenuItem_Click");
+            TaskManager.ShowDesktop();
         }
+
+
     }
 }

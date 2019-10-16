@@ -14,9 +14,11 @@ namespace TaskList
         [STAThread]
         static void Main()
         {
+            Log.write("Program start");
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new TaskList());
+            Log.write("Program finished");
         }
     }
 }

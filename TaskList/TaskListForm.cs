@@ -17,9 +17,12 @@ namespace TaskList
         List<TreeNode> allNodes = new List<TreeNode>();
         List<TreeNode> allProcessiesNodes = new List<TreeNode>();
         List<TreeNode> allWindowsNodes = new List<TreeNode>();
+        List<TreeNode> allFolderNodes = new List<TreeNode>();
 
         ImageList imageList = new ImageList();
         int imageIndex = 0;
+        int defaultIconIndex = 0;
+        int folderIconIndex = 0;
 
         /* FORM EVENTS */
 
@@ -32,6 +35,11 @@ namespace TaskList
         private void TaskList_Load(object sender, EventArgs e)
         {
             Log.write("Load");
+
+#if DEBUG
+            this.Text += " - DEBUG";
+#endif
+
             treeView.BeginUpdate();
 
             this.imageList.ImageSize = new System.Drawing.Size(16, 16);
@@ -41,24 +49,28 @@ namespace TaskList
             //string[] names = assembly.GetManifestResourceNames();
 
             Bitmap defaultIcon = new Bitmap(System.Reflection.Assembly.GetEntryAssembly().GetManifestResourceStream("TaskList.Resources.TaskList.ico"));
+            this.defaultIconIndex = this.imageIndex++;
+            this.imageList.Images.Add("image" + this.defaultIconIndex, (Image)defaultIcon);
 
-            this.imageList.Images.Add("image" + this.imageIndex, (Image)defaultIcon);
+            Bitmap folderIcon = new Bitmap(System.Reflection.Assembly.GetEntryAssembly().GetManifestResourceStream("TaskList.Resources.folder.ico"));
+            this.folderIconIndex = this.imageIndex++;
+            this.imageList.Images.Add("image" + this.folderIconIndex, (Image)folderIcon);
 
             var rootNodeData = new NodeDataModel();
             rootNodeData.isMoovable = false;
             rootNodeData.image = defaultIcon;
-            this.rootNode = treeView.Nodes.Add("Tasks", "Tasks", this.imageIndex, this.imageIndex++);
+            this.rootNode = treeView.Nodes.Add("Tasks", "Tasks", this.defaultIconIndex, this.defaultIconIndex);
             this.rootNode.Tag = rootNodeData;
 
             var processiesNodeData = new NodeDataModel();
             processiesNodeData.isMoovable = false;
             rootNodeData.image = defaultIcon;
-            this.processiesNode = rootNode.Nodes.Add("Processies", "Processies", 0, 0);
+            this.processiesNode = rootNode.Nodes.Add("Processies", "Processies", this.defaultIconIndex, this.defaultIconIndex);
             this.processiesNode.Tag = processiesNodeData;
 
             var windowsNodeData = new NodeDataModel();
             windowsNodeData.isMoovable = false;
-            this.windowsNode = rootNode.Nodes.Add("Windows", "Windows", 0, 0);
+            this.windowsNode = rootNode.Nodes.Add("Windows", "Windows", this.defaultIconIndex, this.defaultIconIndex);
             rootNodeData.image = defaultIcon;
             this.windowsNode.Tag = windowsNodeData;
 
@@ -97,7 +109,8 @@ namespace TaskList
         private void updatTree()
         {
             Log.write("updatTree");
-            //treeView.BeginUpdate();
+            
+            IntPtr currentAppHandle = Process.GetCurrentProcess().MainWindowHandle;
 
             //process add 
 
@@ -131,6 +144,7 @@ namespace TaskList
 
                 var nodeData = new NodeDataModel();
                 nodeData.isProcess = true;
+                nodeData.isCurrentApp = (currentAppHandle == nodeData.handle);
                 nodeData.process = process;
 
                 try
@@ -191,6 +205,11 @@ namespace TaskList
 
             foreach (KeyValuePair<IntPtr, string> window in windowsList)
             {
+
+                if (currentAppHandle == window.Key) {
+                    continue;
+                }
+
                 bool exists = false;
                 foreach (TreeNode oldNode in this.allWindowsNodes)
                 {
@@ -218,6 +237,7 @@ namespace TaskList
                 nodeData.isWindow = true;
                 nodeData.process = null;
                 nodeData.handle = window.Key;
+                nodeData.isCurrentApp = currentAppHandle == nodeData.handle;
                 nodeData.image = TaskManager.GetSmallWindowIcon(nodeData.handle);
 
                 this.imageList.Images.Add("image" + this.imageIndex, (Image)nodeData.image);
@@ -399,6 +419,26 @@ namespace TaskList
         }
 
         /* CONTEXT MENU EVENTS */
+        private void folderToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Log.write("renameToolStripMenuItem_Click");
+
+            if (treeView.SelectedNode == null)
+            {
+                return;
+            }
+
+            TreeNode node = treeView.SelectedNode.Nodes.Add("Folder", "Folder", this.folderIconIndex, this.folderIconIndex);
+
+            NodeDataModel nodeData = new NodeDataModel();
+            nodeData.isFolder = true;
+            node.Tag = nodeData;
+            
+            this.allNodes.Add(node);
+            this.allFolderNodes.Add(node);
+            treeView.SelectedNode.Expand();
+        }
+
         private void closeToolStripMenuItem_Click(object sender, EventArgs e)
         {
             Log.write("closeToolStripMenuItem_Click");
@@ -444,6 +484,25 @@ namespace TaskList
 
             nodeData.isRenamed = true;
             e.Node.EndEdit(true);
+        }
+
+        private void deleteToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Log.write("deleteToolStripMenuItem_Click");
+
+            if (treeView.SelectedNode == null)
+            {
+                return;
+            }
+
+            NodeDataModel nodeData = (NodeDataModel)treeView.SelectedNode.Tag;
+
+            if (nodeData.isFolder && treeView.SelectedNode.Nodes.Count == 0) {
+                this.allNodes.Remove(treeView.SelectedNode);
+                this.allFolderNodes.Remove(treeView.SelectedNode);
+                treeView.SelectedNode.Parent.Nodes.Remove(treeView.SelectedNode);
+            }
+            
         }
 
         /* MENU EVENTS */
@@ -518,6 +577,7 @@ namespace TaskList
             Log.write("showDesktopToolStripMenuItem_Click");
             TaskManager.ShowDesktop();
         }
+
 
     }
 }

@@ -15,8 +15,9 @@ namespace TaskList
         public bool isFolder = false;
         public bool isDeletable = false;
         public bool isMoovable = true;
-        public bool isisHidden = false;
+        public bool isHidden = false;
         public bool isRenamed = false;
+        public bool isCurrentApp = false;
         public int id = 0;
         public string name = "";
         public Process process = null;

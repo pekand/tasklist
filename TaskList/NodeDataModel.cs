@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace TaskList
 {
-    class NodeData
+    class NodeDataModel
     {
         public bool isWindow = false;
         public bool isProcess = false;

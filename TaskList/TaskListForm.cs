@@ -7,7 +7,7 @@ using System.Windows.Forms;
 
 namespace TaskList
 {
-    public partial class TaskList : Form
+    public partial class TaskListForm : Form
     {
 
         TreeNode rootNode = null;
@@ -23,7 +23,7 @@ namespace TaskList
 
         /* FORM EVENTS */
 
-        public TaskList()
+        public TaskListForm()
         {
             Log.write("Constructor");
             InitializeComponent();
@@ -44,19 +44,19 @@ namespace TaskList
 
             this.imageList.Images.Add("image" + this.imageIndex, (Image)defaultIcon);
 
-            var rootNodeData = new NodeData();
+            var rootNodeData = new NodeDataModel();
             rootNodeData.isMoovable = false;
             rootNodeData.image = defaultIcon;
             this.rootNode = treeView.Nodes.Add("Tasks", "Tasks", this.imageIndex, this.imageIndex++);
             this.rootNode.Tag = rootNodeData;
 
-            var processiesNodeData = new NodeData();
+            var processiesNodeData = new NodeDataModel();
             processiesNodeData.isMoovable = false;
             rootNodeData.image = defaultIcon;
             this.processiesNode = rootNode.Nodes.Add("Processies", "Processies", 0, 0);
             this.processiesNode.Tag = processiesNodeData;
 
-            var windowsNodeData = new NodeData();
+            var windowsNodeData = new NodeDataModel();
             windowsNodeData.isMoovable = false;
             this.windowsNode = rootNode.Nodes.Add("Windows", "Windows", 0, 0);
             rootNodeData.image = defaultIcon;
@@ -110,7 +110,7 @@ namespace TaskList
                 foreach (TreeNode oldNode in this.allProcessiesNodes)
                 {
 
-                    if (((NodeData)oldNode.Tag).process.Id == process.Id)
+                    if (((NodeDataModel)oldNode.Tag).process.Id == process.Id)
                     {
 
                         if (process.ProcessName != oldNode.Text) {
@@ -127,7 +127,7 @@ namespace TaskList
                     continue;
                 }
 
-                var nodeData = new NodeData();
+                var nodeData = new NodeDataModel();
                 nodeData.isProcess = true;
                 nodeData.process = process;
 
@@ -163,7 +163,7 @@ namespace TaskList
             foreach (TreeNode oldNode in this.allProcessiesNodes)
             {
 
-                NodeData nodeData = (NodeData)oldNode.Tag;
+                NodeDataModel nodeData = (NodeDataModel)oldNode.Tag;
                 bool exists = false;
                 foreach (Process process in processies)
                 {
@@ -191,7 +191,7 @@ namespace TaskList
                 foreach (TreeNode oldNode in this.allWindowsNodes)
                 {
 
-                    if (((NodeData)oldNode.Tag).handle == window.Key)
+                    if (((NodeDataModel)oldNode.Tag).handle == window.Key)
                     {
 
                         if (window.Value != oldNode.Text)
@@ -209,7 +209,7 @@ namespace TaskList
                     continue;
                 }
 
-                var nodeData = new NodeData();
+                var nodeData = new NodeDataModel();
                 nodeData.isWindow = true;
                 nodeData.process = null;
                 nodeData.handle = window.Key;
@@ -227,7 +227,7 @@ namespace TaskList
             foreach (TreeNode oldNode in this.allWindowsNodes)
             {
 
-                NodeData nodeData = (NodeData)oldNode.Tag;
+                NodeDataModel nodeData = (NodeDataModel)oldNode.Tag;
                 bool exists = false;
                 foreach (KeyValuePair<IntPtr, string> window in windowsList)
                 {
@@ -273,7 +273,7 @@ namespace TaskList
                 return;
             }
 
-            NodeData nodeData = (NodeData)e.Node.Tag;
+            NodeDataModel nodeData = (NodeDataModel)e.Node.Tag;
 
             if (nodeData == null)
             {
@@ -402,7 +402,7 @@ namespace TaskList
                 return;
             }
 
-            NodeData nodeData = (NodeData)treeView.SelectedNode.Tag;
+            NodeDataModel nodeData = (NodeDataModel)treeView.SelectedNode.Tag;
 
             if (nodeData.handle != IntPtr.Zero) {
                 TaskManager.CloseWindow(nodeData.handle);

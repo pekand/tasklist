@@ -17,7 +17,7 @@ namespace TaskList
             Log.write("Program start");
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new TaskList());
+            Application.Run(new TaskListForm());
             Log.write("Program finished");
         }
     }

@@ -71,18 +71,18 @@
     <Compile Include="SerializationManager.cs" />
     <Compile Include="SystemManager.cs" />
     <Compile Include="TaskManager.cs" />
-    <Compile Include="NodeData.cs" />
-    <Compile Include="TaskList.cs">
+    <Compile Include="NodeDataModel.cs" />
+    <Compile Include="TaskListForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="TaskList.Designer.cs">
-      <DependentUpon>TaskList.cs</DependentUpon>
+    <Compile Include="TaskListForm.Designer.cs">
+      <DependentUpon>TaskListForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="FormManager.cs" />
-    <EmbeddedResource Include="TaskList.resx">
-      <DependentUpon>TaskList.cs</DependentUpon>
+    <EmbeddedResource Include="TaskListForm.resx">
+      <DependentUpon>TaskListForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

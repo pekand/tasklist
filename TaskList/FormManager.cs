@@ -12,7 +12,7 @@ namespace TaskList
     class FormManager
     {
 
-        public static int IsOnScreen(TaskList form)
+        public static int IsOnScreen(TaskListForm form)
         {
             Log.write("FormManager IsOnScreen");
             Screen[] screens = Screen.AllScreens;
@@ -31,7 +31,7 @@ namespace TaskList
             return -1;
         }
 
-        public static void saveFormPosition(TaskList form)
+        public static void saveFormPosition(TaskListForm form)
         {
             Log.write("FormManager saveFormPosition");
             if (form.WindowState == FormWindowState.Maximized)
@@ -61,7 +61,7 @@ namespace TaskList
             Properties.Settings.Default.Save();
         }
 
-        public static void restoreFormPosition(TaskList form)
+        public static void restoreFormPosition(TaskListForm form)
         {
             Log.write("FormManager restoreFormPosition");
             if (Properties.Settings.Default.firstRun)

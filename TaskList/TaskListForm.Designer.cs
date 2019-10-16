@@ -46,8 +46,9 @@
             this.optionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.alwaysOnTopToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.showDesktopToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.treeView = new CustomTreeView();
+            this.treeView = new TaskList.CustomTreeView();
             this.tableLayoutPanel = new System.Windows.Forms.TableLayoutPanel();
+            this.autorunToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.contextMenuStrip.SuspendLayout();
             this.menuStrip.SuspendLayout();
             this.tableLayoutPanel.SuspendLayout();
@@ -158,7 +159,8 @@
             // optionsToolStripMenuItem
             // 
             this.optionsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.alwaysOnTopToolStripMenuItem});
+            this.alwaysOnTopToolStripMenuItem,
+            this.autorunToolStripMenuItem});
             this.optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
             this.optionsToolStripMenuItem.Size = new System.Drawing.Size(61, 20);
             this.optionsToolStripMenuItem.Text = "Options";
@@ -166,7 +168,7 @@
             // alwaysOnTopToolStripMenuItem
             // 
             this.alwaysOnTopToolStripMenuItem.Name = "alwaysOnTopToolStripMenuItem";
-            this.alwaysOnTopToolStripMenuItem.Size = new System.Drawing.Size(149, 22);
+            this.alwaysOnTopToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.alwaysOnTopToolStripMenuItem.Text = "Always on top";
             this.alwaysOnTopToolStripMenuItem.Click += new System.EventHandler(this.alwaysOnTopToolStripMenuItem_Click);
             // 
@@ -211,7 +213,14 @@
             this.tableLayoutPanel.Size = new System.Drawing.Size(804, 1043);
             this.tableLayoutPanel.TabIndex = 6;
             // 
-            // TaskList
+            // autorunToolStripMenuItem
+            // 
+            this.autorunToolStripMenuItem.Name = "autorunToolStripMenuItem";
+            this.autorunToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.autorunToolStripMenuItem.Text = "Autorun";
+            this.autorunToolStripMenuItem.Click += new System.EventHandler(this.autorunToolStripMenuItem_Click);
+            // 
+            // TaskListForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -221,7 +230,7 @@
             this.Controls.Add(this.menuStrip);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.menuStrip;
-            this.Name = "TaskList";
+            this.Name = "TaskListForm";
             this.Text = "TaskList";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.TaskList_FormClosing);
             this.Load += new System.EventHandler(this.TaskList_Load);
@@ -257,9 +266,7 @@
         private System.Windows.Forms.ToolStripMenuItem optionsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem alwaysOnTopToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem showDesktopToolStripMenuItem;
-
-       
-      
+        private System.Windows.Forms.ToolStripMenuItem autorunToolStripMenuItem;
     }
 }
 

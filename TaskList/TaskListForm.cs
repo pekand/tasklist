@@ -69,6 +69,7 @@ namespace TaskList
             windowsNode.Expand();
             treeView.EndUpdate();
 
+            autorunToolStripMenuItem.Checked = SystemManager.isAutorunSet();
 
             this.updateTimer.Enabled = true;
         }
@@ -461,12 +462,26 @@ namespace TaskList
             alwaysOnTopToolStripMenuItem.Checked = this.TopMost;
         }
 
+        private void autorunToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Log.write("autorunToolStripMenuItem_Click");
+
+            if (SystemManager.isAutorunSet())
+            {
+                SystemManager.autorunOff();
+                autorunToolStripMenuItem.Checked = false;
+            }
+            else {
+                SystemManager.autorunOn();
+                autorunToolStripMenuItem.Checked = true;
+            }
+        }
+
         private void showDesktopToolStripMenuItem_Click(object sender, EventArgs e)
         {
             Log.write("showDesktopToolStripMenuItem_Click");
             TaskManager.ShowDesktop();
         }
-
-
+        
     }
 }

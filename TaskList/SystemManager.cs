@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -6,6 +7,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace TaskList
 {
@@ -92,6 +94,41 @@ namespace TaskList
         {
             Log.write("systemManager Restart");
             DoExitWin(EWX_REBOOT);
+        }
+
+        public static void autorunOn()
+        {
+            Log.write("systemManager autorunOn");
+            RegistryKey rkApp = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
+
+            if (!isAutorunSet()) { 
+                rkApp.SetValue("TaskList", Application.ExecutablePath.ToString());
+            }
+        }
+
+        public static void autorunOff()
+        {
+            Log.write("systemManager autorunOff");
+            RegistryKey rkApp = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
+
+            if (isAutorunSet())
+            {
+
+                rkApp.DeleteValue("TaskList", false);
+            }
+        }
+
+        public static bool isAutorunSet()
+        {
+            Log.write("systemManager isAutorunSet");
+            RegistryKey rkApp = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
+
+            if (rkApp.GetValue("TaskList") == null)
+            {
+                return false;
+            }
+
+            return rkApp.GetValue("TaskList").ToString() == Application.ExecutablePath.ToString();
         }
 
     }

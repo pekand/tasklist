@@ -15,5 +15,12 @@ namespace TaskList
             File.AppendAllText(@"log.txt", text + Environment.NewLine);
 #endif
         }
+
+        public static void clear()
+        {
+#if DEBUG
+            File.WriteAllText(@"log.txt", "");
+#endif
+        }
     }
 }

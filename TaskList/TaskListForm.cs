@@ -416,6 +416,8 @@ namespace TaskList
 
         private void renameToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            Log.write("renameToolStripMenuItem_Click");
+
             if (treeView.SelectedNode == null)
             {
                 return;
@@ -426,6 +428,7 @@ namespace TaskList
 
         private void treeView_AfterLabelEdit(object sender, NodeLabelEditEventArgs e)
         {
+            Log.write("treeView_AfterLabelEdit");
 
             if (e.Label == null)
             {

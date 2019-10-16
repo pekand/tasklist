@@ -14,6 +14,7 @@ namespace TaskList
         [STAThread]
         static void Main()
         {
+            Log.clear();
             Log.write("Program start");
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);

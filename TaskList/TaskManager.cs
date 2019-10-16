@@ -57,9 +57,6 @@ namespace TaskList
                 if (!IsWindowVisible(IntPtr))
                     return true;
 
-                if (IsIconic(IntPtr))
-                    return true;
-
                 int length = GetWindowTextLength(IntPtr);
                 if (length == 0) return true;
 
@@ -257,6 +254,7 @@ namespace TaskList
             }
             catch (Exception e)
             {
+                Log.write("Exception: "+e.Message);
                 return null;
             }
         }

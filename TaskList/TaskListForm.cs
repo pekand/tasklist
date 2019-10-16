@@ -110,11 +110,12 @@ namespace TaskList
                 bool exists = false;
                 foreach (TreeNode oldNode in this.allProcessiesNodes)
                 {
+                    var oldNodeData = (NodeDataModel)oldNode.Tag;
 
-                    if (((NodeDataModel)oldNode.Tag).process.Id == process.Id)
+                    if (oldNodeData.process.Id == process.Id)
                     {
 
-                        if (process.ProcessName != oldNode.Text) {
+                        if (!oldNodeData.isRenamed && process.ProcessName != oldNode.Text) {
                             oldNode.Text = process.ProcessName;
                         }
 
@@ -139,10 +140,12 @@ namespace TaskList
                     this.imageList.Images.Add("image" + this.imageIndex, (Image)nodeData.image);*/
                 }
                 catch (System.ComponentModel.Win32Exception e) {
+                    Log.write("Exception: " + e.Message);
                     nodeData.image = null;
                 }
                 catch (System.InvalidOperationException e)
                 {
+                    Log.write("Exception: " + e.Message);
                     nodeData.image = null;
                 }
 
@@ -191,11 +194,12 @@ namespace TaskList
                 bool exists = false;
                 foreach (TreeNode oldNode in this.allWindowsNodes)
                 {
+                    var oldNodeData = (NodeDataModel)oldNode.Tag;
 
-                    if (((NodeDataModel)oldNode.Tag).handle == window.Key)
+                    if (oldNodeData.handle == window.Key)
                     {
 
-                        if (window.Value != oldNode.Text)
+                        if (!oldNodeData.isRenamed && window.Value != oldNode.Text)
                         {
                             oldNode.Text = window.Value;
                         }
@@ -410,6 +414,35 @@ namespace TaskList
             }
         }
 
+        private void renameToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (treeView.SelectedNode == null)
+            {
+                return;
+            }
+
+            treeView.SelectedNode.BeginEdit();
+        }
+
+        private void treeView_AfterLabelEdit(object sender, NodeLabelEditEventArgs e)
+        {
+
+            if (e.Label == null)
+            {
+                return;
+            }
+
+            NodeDataModel nodeData = (NodeDataModel)e.Node.Tag;
+
+            if (nodeData == null)
+            {
+                return;
+            }
+
+            nodeData.isRenamed = true;
+            e.Node.EndEdit(true);
+        }
+
         /* MENU EVENTS */
 
         private void lockToolStripMenuItem_Click(object sender, EventArgs e)
@@ -482,6 +515,6 @@ namespace TaskList
             Log.write("showDesktopToolStripMenuItem_Click");
             TaskManager.ShowDesktop();
         }
-        
+
     }
 }

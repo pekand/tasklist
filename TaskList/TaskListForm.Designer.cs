@@ -46,9 +46,10 @@
             this.optionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.alwaysOnTopToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.showDesktopToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.treeView = new TaskList.CustomTreeView();
             this.tableLayoutPanel = new System.Windows.Forms.TableLayoutPanel();
             this.autorunToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.renameToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.treeView = new TaskList.CustomTreeView();
             this.contextMenuStrip.SuspendLayout();
             this.menuStrip.SuspendLayout();
             this.tableLayoutPanel.SuspendLayout();
@@ -62,14 +63,15 @@
             // contextMenuStrip
             // 
             this.contextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.renameToolStripMenuItem,
             this.closeToolStripMenuItem});
             this.contextMenuStrip.Name = "contextMenuStrip1";
-            this.contextMenuStrip.Size = new System.Drawing.Size(104, 26);
+            this.contextMenuStrip.Size = new System.Drawing.Size(118, 48);
             // 
             // closeToolStripMenuItem
             // 
             this.closeToolStripMenuItem.Name = "closeToolStripMenuItem";
-            this.closeToolStripMenuItem.Size = new System.Drawing.Size(103, 22);
+            this.closeToolStripMenuItem.Size = new System.Drawing.Size(117, 22);
             this.closeToolStripMenuItem.Text = "Close";
             this.closeToolStripMenuItem.Click += new System.EventHandler(this.closeToolStripMenuItem_Click);
             // 
@@ -168,7 +170,7 @@
             // alwaysOnTopToolStripMenuItem
             // 
             this.alwaysOnTopToolStripMenuItem.Name = "alwaysOnTopToolStripMenuItem";
-            this.alwaysOnTopToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.alwaysOnTopToolStripMenuItem.Size = new System.Drawing.Size(149, 22);
             this.alwaysOnTopToolStripMenuItem.Text = "Always on top";
             this.alwaysOnTopToolStripMenuItem.Click += new System.EventHandler(this.alwaysOnTopToolStripMenuItem_Click);
             // 
@@ -178,26 +180,6 @@
             this.showDesktopToolStripMenuItem.Size = new System.Drawing.Size(94, 20);
             this.showDesktopToolStripMenuItem.Text = "Show Desktop";
             this.showDesktopToolStripMenuItem.Click += new System.EventHandler(this.showDesktopToolStripMenuItem_Click);
-            // 
-            // treeView
-            // 
-            this.treeView.AllowDrop = true;
-            this.treeView.BackColor = System.Drawing.SystemColors.Control;
-            this.treeView.Cursor = System.Windows.Forms.Cursors.Arrow;
-            this.treeView.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.treeView.Font = new System.Drawing.Font("Consolas", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.treeView.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.treeView.Location = new System.Drawing.Point(3, 3);
-            this.treeView.Name = "treeView";
-            this.treeView.Size = new System.Drawing.Size(798, 1037);
-            this.treeView.TabIndex = 2;
-            this.treeView.ItemDrag += new System.Windows.Forms.ItemDragEventHandler(this.treeView_ItemDrag);
-            this.treeView.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.treeView_NodeMouseClick);
-            this.treeView.DragDrop += new System.Windows.Forms.DragEventHandler(this.treeView_DragDrop);
-            this.treeView.DragEnter += new System.Windows.Forms.DragEventHandler(this.treeView_DragEnter);
-            this.treeView.DragOver += new System.Windows.Forms.DragEventHandler(this.treeView_DragOver);
-            this.treeView.MouseClick += new System.Windows.Forms.MouseEventHandler(this.treeView_MouseClick);
-            this.treeView.MouseUp += new System.Windows.Forms.MouseEventHandler(this.treeView_MouseUp);
             // 
             // tableLayoutPanel
             // 
@@ -216,9 +198,38 @@
             // autorunToolStripMenuItem
             // 
             this.autorunToolStripMenuItem.Name = "autorunToolStripMenuItem";
-            this.autorunToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.autorunToolStripMenuItem.Size = new System.Drawing.Size(149, 22);
             this.autorunToolStripMenuItem.Text = "Autorun";
             this.autorunToolStripMenuItem.Click += new System.EventHandler(this.autorunToolStripMenuItem_Click);
+            // 
+            // renameToolStripMenuItem
+            // 
+            this.renameToolStripMenuItem.Name = "renameToolStripMenuItem";
+            this.renameToolStripMenuItem.Size = new System.Drawing.Size(117, 22);
+            this.renameToolStripMenuItem.Text = "Rename";
+            this.renameToolStripMenuItem.Click += new System.EventHandler(this.renameToolStripMenuItem_Click);
+            // 
+            // treeView
+            // 
+            this.treeView.AllowDrop = true;
+            this.treeView.BackColor = System.Drawing.SystemColors.Control;
+            this.treeView.Cursor = System.Windows.Forms.Cursors.Arrow;
+            this.treeView.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.treeView.Font = new System.Drawing.Font("Consolas", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.treeView.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.treeView.LabelEdit = true;
+            this.treeView.Location = new System.Drawing.Point(3, 3);
+            this.treeView.Name = "treeView";
+            this.treeView.Size = new System.Drawing.Size(798, 1037);
+            this.treeView.TabIndex = 2;
+            this.treeView.AfterLabelEdit += new System.Windows.Forms.NodeLabelEditEventHandler(this.treeView_AfterLabelEdit);
+            this.treeView.ItemDrag += new System.Windows.Forms.ItemDragEventHandler(this.treeView_ItemDrag);
+            this.treeView.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.treeView_NodeMouseClick);
+            this.treeView.DragDrop += new System.Windows.Forms.DragEventHandler(this.treeView_DragDrop);
+            this.treeView.DragEnter += new System.Windows.Forms.DragEventHandler(this.treeView_DragEnter);
+            this.treeView.DragOver += new System.Windows.Forms.DragEventHandler(this.treeView_DragOver);
+            this.treeView.MouseClick += new System.Windows.Forms.MouseEventHandler(this.treeView_MouseClick);
+            this.treeView.MouseUp += new System.Windows.Forms.MouseEventHandler(this.treeView_MouseUp);
             // 
             // TaskListForm
             // 
@@ -267,6 +278,7 @@
         private System.Windows.Forms.ToolStripMenuItem alwaysOnTopToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem showDesktopToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem autorunToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem renameToolStripMenuItem;
     }
 }
 

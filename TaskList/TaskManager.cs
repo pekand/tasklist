@@ -14,37 +14,21 @@ namespace TaskList
 {
     public static class TaskManager
     {
-        //*******// List windows
 
-        public static IDictionary<IntPtr, string> GetOpenWindows()
+        public static Process[] getProcessies()
         {
-            Log.write("TaskManager GetOpenWindows");
-            IntPtr shellWindow = GetShellWindow();
-            Dictionary<IntPtr, string> windows = new Dictionary<IntPtr, string>();
+            Log.write("TaskManager getProcessies");
+            Process[] tasks = System.Diagnostics.Process.GetProcesses();
 
-            EnumWindows(delegate (IntPtr IntPtr, int lParam)
-            {
-                if (IntPtr == shellWindow) return true;
-                if (!IsWindowVisible(IntPtr)) return true;
-
-                int length = GetWindowTextLength(IntPtr);
-                if (length == 0) return true;
-
-                StringBuilder builder = new StringBuilder(length);
-                GetWindowText(IntPtr, builder, length + 1);
-
-                windows[IntPtr] = builder.ToString();
-                return true;
-
-            }, 0);
-
-            return windows;
+            return tasks;
         }
 
-        private delegate bool EnumWindowsProc(IntPtr IntPtr, int lParam);
+        /* List windows */
+
+        private delegate bool EnumDesktopWindowsDelegate(IntPtr hWnd, int lParam);
 
         [DllImport("USER32.DLL")]
-        private static extern bool EnumWindows(EnumWindowsProc enumFunc, int lParam);
+        static extern bool EnumDesktopWindows(IntPtr hDesktop, EnumDesktopWindowsDelegate lpfn, IntPtr lParam);
 
         [DllImport("USER32.DLL")]
         private static extern int GetWindowText(IntPtr IntPtr, StringBuilder lpString, int nMaxCount);
@@ -57,6 +41,38 @@ namespace TaskList
 
         [DllImport("USER32.DLL")]
         private static extern IntPtr GetShellWindow();
+
+        public static IDictionary<IntPtr, string> GetOpenWindows()
+        {
+            Log.write("TaskManager GetOpenWindows");
+            IntPtr shellWindow = GetShellWindow();
+            Dictionary<IntPtr, string> windows = new Dictionary<IntPtr, string>();
+
+            IntPtr hDesktop = IntPtr.Zero; // current desktop
+            EnumDesktopWindows(hDesktop, delegate(IntPtr IntPtr, int lParam)
+            {
+                if (IntPtr == shellWindow)
+                    return true;
+
+                if (!IsWindowVisible(IntPtr))
+                    return true;
+
+                if (IsIconic(IntPtr))
+                    return true;
+
+                int length = GetWindowTextLength(IntPtr);
+                if (length == 0) return true;
+
+                StringBuilder builder = new StringBuilder(length);
+                GetWindowText(IntPtr, builder, length + 1);
+
+                windows[IntPtr] = builder.ToString();
+                return true;
+
+            }, IntPtr.Zero);
+
+            return windows;
+        }
 
         public static string[] GetDesktopWindowsTitles()
         {
@@ -76,11 +92,11 @@ namespace TaskList
 
         //*******// Show Hide Application
 
-        static IntPtr test;
-
         public static void hideApp(string name)
         {
             Log.write("TaskManager hideApp");
+            const int SW_HIDE = 0;
+
             IntPtr IntPtr;
             Process[] processRunning = Process.GetProcesses();
             foreach (Process pr in processRunning)
@@ -88,7 +104,6 @@ namespace TaskList
                 if (pr.ProcessName == name)
                 {
                     IntPtr = pr.MainWindowHandle;
-                    test = IntPtr;
                     ShowWindow(IntPtr, SW_HIDE);
                 }
             }
@@ -97,6 +112,9 @@ namespace TaskList
         public static void showApp(string name)
         {
             Log.write("TaskManager showApp");
+
+            const int SW_SHOW = 5;
+
             IntPtr IntPtr;
             Process[] processRunning = Process.GetProcesses();
             foreach (Process pr in processRunning)
@@ -112,11 +130,14 @@ namespace TaskList
         public static void hideApp(IntPtr IntPtr)
         {
             Log.write("TaskManager hideApp");
+            const int SW_HIDE = 0;
+
             ShowWindow(IntPtr, SW_HIDE);
         }
 
         public static void showApp(IntPtr IntPtr)
         {
+            const int SW_SHOW = 5;
             Log.write("TaskManager showApp");
             ShowWindow(IntPtr, SW_SHOW);
         }
@@ -141,6 +162,9 @@ namespace TaskList
         public static void setForegroundWindow(IntPtr hWnd)
         {
             Log.write("TaskManager setForegroundWindow");
+
+            const int SW_SHOWNORMAL = 1;
+
             if (TaskManager.isMinimalized(hWnd))
             {
                 ShowWindow(hWnd, SW_SHOWNORMAL);
@@ -148,10 +172,6 @@ namespace TaskList
 
             SetForegroundWindow(hWnd);
         }
-
-        private const int SW_HIDE = 0;
-        private const int SW_SHOWNORMAL = 1;
-        private const int SW_SHOW = 5;
 
         [DllImport("user32.dll")]
         static extern bool ShowWindow(IntPtr IntPtr, int nCmdShow);
@@ -254,7 +274,7 @@ namespace TaskList
             return IsWindow(hWnd);
         }
 
-        //*******// Check if window is minimalized
+        /* Check if window is minimalized */
 
         [DllImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
@@ -266,22 +286,11 @@ namespace TaskList
             return IsIconic(hWnd);
         }
 
-        public static Process[] getProcessies()
-        {
-            Log.write("TaskManager getProcessies");
-            Process[] tasks = System.Diagnostics.Process.GetProcesses();
-
-            return tasks;
-        }
-
-        private const int SW_MAXIMIZE = 3;
-        private const int SW_MINIMIZE = 6;
-       
-
-        public static void ShowDesktop(bool skipCurrentWindow = true)
+        public static void ShowDesktop()
         {
             Log.write("TaskManager ShowDesktop");
 
+            const int SW_MINIMIZE = 6;
             IntPtr handle = Process.GetCurrentProcess().MainWindowHandle;
 
             IDictionary<IntPtr, string> windowsList = TaskManager.GetOpenWindows();

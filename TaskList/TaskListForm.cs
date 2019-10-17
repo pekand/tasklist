@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.IO;
 using System.Reflection;
 using System.Windows.Forms;
 
@@ -10,6 +12,7 @@ namespace TaskList
 {
     public partial class TaskListForm : Form
     {
+        public OptionsModel options = new OptionsModel();
 
         TreeNode rootNode = null;
         TreeNode processiesNode = null;
@@ -36,57 +39,92 @@ namespace TaskList
         public void saveFormSettings()
         {
             Log.write("FormManager saveFormPosition");
+
             if (this.WindowState == FormWindowState.Maximized)
             {
-                Properties.Settings.Default.Location = this.RestoreBounds.Location;
-                Properties.Settings.Default.Size = this.RestoreBounds.Size;
-                Properties.Settings.Default.Maximised = true;
-                Properties.Settings.Default.Minimised = false;
+                options.Location = this.RestoreBounds.Location;
+                options.Size = this.RestoreBounds.Size;
+                options.Maximised = true;
+                options.Minimised = false;
             }
             else if (this.WindowState == FormWindowState.Normal)
             {
-                Properties.Settings.Default.Location = this.Location;
-                Properties.Settings.Default.Size = this.Size;
-                Properties.Settings.Default.Maximised = false;
-                Properties.Settings.Default.Minimised = false;
+                options.Location = this.Location;
+                options.Size = this.Size;
+                options.Maximised = false;
+                options.Minimised = false;
             }
             else
             {
-                Properties.Settings.Default.Location = this.RestoreBounds.Location;
-                Properties.Settings.Default.Size = this.RestoreBounds.Size;
-                Properties.Settings.Default.Maximised = false;
-                Properties.Settings.Default.Minimised = true;
+                options.Location = this.RestoreBounds.Location;
+                options.Size = this.RestoreBounds.Size;
+                options.Maximised = false;
+                options.Minimised = true;
             }
 
-            Properties.Settings.Default.mostTop = this.TopMost;
-            Properties.Settings.Default.font = this.treeView.Font;
+            options.mostTop = this.TopMost;
+            options.font = TypeDescriptor.GetConverter(typeof(Font)).ConvertToInvariantString(this.treeView.Font);
 
-            Properties.Settings.Default.Save();
+#if DEBUG
+            string settingsFilePath = "settings.xml";
+#else
+            
+            string roamingPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\TaskList\\";
+            if (!Directory.Exists(roamingPath))
+            {
+                Directory.CreateDirectory(roamingPath);
+            }
+
+            string settingsFilePath = roamingPath + "settings.xml";    
+#endif
+            string optionsXml = SerializationManager.Serialize<OptionsModel>(options);
+            System.IO.File.WriteAllText(settingsFilePath, optionsXml);
         }
 
         public void restoreFormSettings()
         {
             Log.write("FormManager restoreFormPosition");
-            if (Properties.Settings.Default.firstRun)
-            {
-                Properties.Settings.Default.firstRun = false;
+
+#if DEBUG
+            string settingsFilePath = "settings.xml";
+#else
+            string roamingPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\TaskList\\";
+            string settingsFilePath = roamingPath + "settings.xml";
+#endif
+
+            if (!File.Exists(settingsFilePath)) {
+                return;
             }
-            else if (Properties.Settings.Default.Maximised)
+
+            string optionsXml = System.IO.File.ReadAllText(settingsFilePath);
+            OptionsModel options = SerializationManager.Deserialize<OptionsModel>(optionsXml);
+
+            if (options != null)
+            {
+                this.options = options;
+            }
+
+
+            if (options.firstRun)
+            {
+                options.firstRun = false;
+            }
+            else if (options.Maximised)
             {
                 this.WindowState = FormWindowState.Maximized;
-                this.Location = Properties.Settings.Default.Location;
-                this.Size = Properties.Settings.Default.Size;
+                this.Location = options.Location;
+                this.Size = options.Size;
             }
-            else if (Properties.Settings.Default.Minimised)
+            else if (options.Minimised)
             {
                 this.WindowState = FormWindowState.Minimized;
-                this.Location = Properties.Settings.Default.Location;
-                this.Size = Properties.Settings.Default.Size;
+                this.Location = options.Location;
+                this.Size = options.Size;
             }
             else
             {
-                this.Location = Properties.Settings.Default.Location;
-                this.Size = Properties.Settings.Default.Size;
+                this.Location = options.Location;
+                this.Size = options.Size;
             }
 
             if (FormManager.IsOnScreen(this) == -1)
@@ -98,11 +136,11 @@ namespace TaskList
                 this.Height = 500;
             }
 
-            this.setTopMost(Properties.Settings.Default.mostTop);
+            this.setTopMost(options.mostTop);
 
-            if (Properties.Settings.Default.font != null)
+            if (options.font != null)
             {
-                this.treeView.Font = Properties.Settings.Default.font;
+                this.treeView.Font = TypeDescriptor.GetConverter(typeof(Font)).ConvertFromInvariantString(options.font) as Font;
             }
         }
 
@@ -157,13 +195,14 @@ namespace TaskList
 
             autorunToolStripMenuItem.Checked = SystemManager.isAutorunSet();
 
+            this.restoreFormSettings();
+
             this.updateTimer.Enabled = true;
         }
 
         private void TaskList_Shown(object sender, EventArgs e)
         {
             Log.write("Show");
-            this.restoreFormSettings();
         }
 
         private void TaskList_FormClosing(object sender, FormClosingEventArgs e)
@@ -184,7 +223,7 @@ namespace TaskList
         {
             Log.write("updatTree");
 
-            IntPtr currentAppHandle = Process.GetCurrentProcess().MainWindowHandle;
+            IntPtr currentAppHandle = this.Handle;
 
             //process add 
 

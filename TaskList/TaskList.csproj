@@ -68,6 +68,7 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Log.cs" />
+    <Compile Include="OptionsModel.cs" />
     <Compile Include="SerializationManager.cs" />
     <Compile Include="SystemManager.cs" />
     <Compile Include="TaskManager.cs" />

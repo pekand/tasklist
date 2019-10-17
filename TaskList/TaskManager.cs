@@ -42,6 +42,17 @@ namespace TaskList
         [DllImport("USER32.DLL")]
         private static extern IntPtr GetShellWindow();
 
+        [DllImport("user32.dll", EntryPoint = "GetWindowLong")]
+        static extern IntPtr GetWindowLongPtr(IntPtr hWnd, int nIndex);
+
+        public static bool IsWindowPopup(IntPtr hHandle)
+        {
+            const long WS_POPUP = 0x80000000L;
+            long style = (long)GetWindowLongPtr(hHandle, -16);
+            bool isPopup = ((style & WS_POPUP) != 0);
+            return isPopup;
+        }
+
         public static IDictionary<IntPtr, string> GetOpenWindows()
         {
             Log.write("TaskManager GetOpenWindows");
@@ -55,6 +66,9 @@ namespace TaskList
                     return true;
 
                 if (!IsWindowVisible(IntPtr))
+                    return true;
+
+                if (IsWindowPopup(IntPtr))
                     return true;
 
                 int length = GetWindowTextLength(IntPtr);

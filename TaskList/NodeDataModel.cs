@@ -10,6 +10,7 @@ namespace TaskList
 {
     class NodeDataModel
     {
+        public bool isRoot = false;
         public bool isWindow = false;
         public bool isProcess = false;
         public bool isFolder = false;

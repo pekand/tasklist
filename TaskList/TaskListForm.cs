@@ -157,9 +157,6 @@ namespace TaskList
             this.imageList.ImageSize = new System.Drawing.Size(16, 16);
             treeView.ImageList = this.imageList;
 
-            Assembly assembly = Assembly.GetExecutingAssembly();
-            //string[] names = assembly.GetManifestResourceNames();
-
             Bitmap defaultIcon = new Bitmap(System.Reflection.Assembly.GetEntryAssembly().GetManifestResourceStream("TaskList.Resources.TaskList.ico"));
             this.defaultIconIndex = this.imageIndex++;
             this.imageList.Images.Add("image" + this.defaultIconIndex, (Image)defaultIcon);
@@ -169,6 +166,7 @@ namespace TaskList
             this.imageList.Images.Add("image" + this.folderIconIndex, (Image)folderIcon);
 
             var rootNodeData = new NodeDataModel();
+            rootNodeData.isRoot = true;
             rootNodeData.isMoovable = false;
             rootNodeData.image = defaultIcon;
             this.rootNode = treeView.Nodes.Add("Tasks", "Tasks", this.defaultIconIndex, this.defaultIconIndex);
@@ -215,7 +213,7 @@ namespace TaskList
 
         private void update_Tick(object sender, EventArgs e)
         {
-            Log.write("Update");
+            Log.write("Update tick");
             this.updatTree();
         }
 
@@ -539,12 +537,14 @@ namespace TaskList
             Point targetPoint = treeView.PointToClient(new Point(e.X, e.Y));
 
             TreeNode targetNode = treeView.GetNodeAt(targetPoint);
+            NodeDataModel targetNodeData = (NodeDataModel)targetNode.Tag;
 
             if (targetNode == null) {
                 return;
             }
 
             TreeNode draggedNode = (TreeNode)e.Data.GetData(typeof(TreeNode));
+            NodeDataModel draggedNodeData = (NodeDataModel)draggedNode.Tag;
 
             if (draggedNode.Equals(targetNode) || ContainsNode(draggedNode, targetNode))
             {
@@ -562,33 +562,30 @@ namespace TaskList
 
             if (e.Effect == DragDropEffects.Move)
             {
-
-                draggedNode.Remove();
-
-                int targetNodePosition =  targetNode.Parent.Nodes.IndexOf(targetNode);
-
-                if (addNodeUp) {
+    
+                if (addNodeUp && !targetNodeData.isRoot)
+                {
+                    draggedNode.Remove();
+                    int targetNodePosition = targetNode.Parent.Nodes.IndexOf(targetNode);
                     targetNode.Parent.Nodes.Insert(targetNodePosition, draggedNode);
                 }
 
                 if (addNodeIn)
                 {
+                    draggedNode.Remove();
                     targetNode.Nodes.Add(draggedNode);
+                    targetNode.Expand();
                 }
 
-                if (addNodeDown)
+                if (addNodeDown && !targetNodeData.isRoot)
                 {
-                    targetNode.Parent.Nodes.Insert(targetNodePosition+1, draggedNode);
+                    draggedNode.Remove();
+                    int targetNodePosition = targetNode.Parent.Nodes.IndexOf(targetNode);
+                    targetNode.Parent.Nodes.Insert(targetNodePosition + 1, draggedNode);
                 }
-
             }
 
-            else if (e.Effect == DragDropEffects.Copy)
-            {
-                targetNode.Nodes.Add((TreeNode)draggedNode.Clone());
-            }
-
-            targetNode.Expand();
+            treeView.Invalidate();
 
         }
 

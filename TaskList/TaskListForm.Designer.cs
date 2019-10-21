@@ -50,10 +50,12 @@
             this.alwaysOnTopToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.autorunToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.fontToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.rememberToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.showDesktopToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tableLayoutPanel = new System.Windows.Forms.TableLayoutPanel();
-            this.treeView = new TaskList.CustomTreeView();
             this.fontDialog = new System.Windows.Forms.FontDialog();
+            this.showInTaskbarToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.treeView = new TaskList.CustomTreeView();
             this.contextMenuStrip.SuspendLayout();
             this.menuStrip.SuspendLayout();
             this.tableLayoutPanel.SuspendLayout();
@@ -190,7 +192,9 @@
             this.optionsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.alwaysOnTopToolStripMenuItem,
             this.autorunToolStripMenuItem,
-            this.fontToolStripMenuItem});
+            this.fontToolStripMenuItem,
+            this.rememberToolStripMenuItem,
+            this.showInTaskbarToolStripMenuItem});
             this.optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
             this.optionsToolStripMenuItem.Size = new System.Drawing.Size(61, 20);
             this.optionsToolStripMenuItem.Text = "Options";
@@ -198,23 +202,30 @@
             // alwaysOnTopToolStripMenuItem
             // 
             this.alwaysOnTopToolStripMenuItem.Name = "alwaysOnTopToolStripMenuItem";
-            this.alwaysOnTopToolStripMenuItem.Size = new System.Drawing.Size(149, 22);
+            this.alwaysOnTopToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.alwaysOnTopToolStripMenuItem.Text = "Always on top";
             this.alwaysOnTopToolStripMenuItem.Click += new System.EventHandler(this.alwaysOnTopToolStripMenuItem_Click);
             // 
             // autorunToolStripMenuItem
             // 
             this.autorunToolStripMenuItem.Name = "autorunToolStripMenuItem";
-            this.autorunToolStripMenuItem.Size = new System.Drawing.Size(149, 22);
+            this.autorunToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.autorunToolStripMenuItem.Text = "Autorun";
             this.autorunToolStripMenuItem.Click += new System.EventHandler(this.autorunToolStripMenuItem_Click);
             // 
             // fontToolStripMenuItem
             // 
             this.fontToolStripMenuItem.Name = "fontToolStripMenuItem";
-            this.fontToolStripMenuItem.Size = new System.Drawing.Size(149, 22);
+            this.fontToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.fontToolStripMenuItem.Text = "Font";
             this.fontToolStripMenuItem.Click += new System.EventHandler(this.fontToolStripMenuItem_Click);
+            // 
+            // rememberToolStripMenuItem
+            // 
+            this.rememberToolStripMenuItem.Name = "rememberToolStripMenuItem";
+            this.rememberToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.rememberToolStripMenuItem.Text = "Remember";
+            this.rememberToolStripMenuItem.Click += new System.EventHandler(this.rememberToolStripMenuItem_Click);
             // 
             // showDesktopToolStripMenuItem
             // 
@@ -236,6 +247,13 @@
             this.tableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanel.Size = new System.Drawing.Size(804, 1043);
             this.tableLayoutPanel.TabIndex = 6;
+            // 
+            // showInTaskbarToolStripMenuItem
+            // 
+            this.showInTaskbarToolStripMenuItem.Name = "showInTaskbarToolStripMenuItem";
+            this.showInTaskbarToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.showInTaskbarToolStripMenuItem.Text = "Show in taskbar";
+            this.showInTaskbarToolStripMenuItem.Click += new System.EventHandler(this.showInTaskbarToolStripMenuItem_Click);
             // 
             // treeView
             // 
@@ -310,6 +328,8 @@
         private System.Windows.Forms.ToolStripMenuItem deleteToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem fontToolStripMenuItem;
         private System.Windows.Forms.FontDialog fontDialog;
+        private System.Windows.Forms.ToolStripMenuItem rememberToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem showInTaskbarToolStripMenuItem;
     }
 }
 

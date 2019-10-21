@@ -4,9 +4,13 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Globalization;
 using System.IO;
 using System.Reflection;
+using System.Text;
 using System.Windows.Forms;
+using System.Xml;
+using System.Xml.Linq;
 
 namespace TaskList
 {
@@ -15,16 +19,17 @@ namespace TaskList
         public OptionsModel options = new OptionsModel();
 
         TreeNode rootNode = null;
-        TreeNode processiesNode = null;
+        //TreeNode processiesNode = null;
         TreeNode windowsNode = null;
 
         List<TreeNode> allNodes = new List<TreeNode>();
-        List<TreeNode> allProcessiesNodes = new List<TreeNode>();
+        //List<TreeNode> allProcessiesNodes = new List<TreeNode>();
         List<TreeNode> allWindowsNodes = new List<TreeNode>();
         List<TreeNode> allFolderNodes = new List<TreeNode>();
 
         ImageList imageList = new ImageList();
-        int imageIndex = 0;
+        int lastNodeIndex = 0;
+        int lastImageIndex = 0;
         int defaultIconIndex = 0;
         int folderIconIndex = 0;
 
@@ -42,28 +47,28 @@ namespace TaskList
 
             if (this.WindowState == FormWindowState.Maximized)
             {
-                options.Location = this.RestoreBounds.Location;
-                options.Size = this.RestoreBounds.Size;
-                options.Maximised = true;
-                options.Minimised = false;
+                this.options.Location = this.RestoreBounds.Location;
+                this.options.Size = this.RestoreBounds.Size;
+                this.options.Maximised = true;
+                this.options.Minimised = false;
             }
             else if (this.WindowState == FormWindowState.Normal)
             {
-                options.Location = this.Location;
-                options.Size = this.Size;
-                options.Maximised = false;
-                options.Minimised = false;
+                this.options.Location = this.Location;
+                this.options.Size = this.Size;
+                this.options.Maximised = false;
+                this.options.Minimised = false;
             }
             else
             {
-                options.Location = this.RestoreBounds.Location;
-                options.Size = this.RestoreBounds.Size;
-                options.Maximised = false;
-                options.Minimised = true;
+                this.options.Location = this.RestoreBounds.Location;
+                this.options.Size = this.RestoreBounds.Size;
+                this.options.Maximised = false;
+                this.options.Minimised = true;
             }
 
-            options.mostTop = this.TopMost;
-            options.font = TypeDescriptor.GetConverter(typeof(Font)).ConvertToInvariantString(this.treeView.Font);
+            this.options.mostTop = this.TopMost;
+            this.options.font = TypeDescriptor.GetConverter(typeof(Font)).ConvertToInvariantString(this.treeView.Font);
 
 #if DEBUG
             string settingsFilePath = "settings.xml";
@@ -77,8 +82,86 @@ namespace TaskList
 
             string settingsFilePath = roamingPath + "settings.xml";    
 #endif
-            string optionsXml = SerializationManager.Serialize<OptionsModel>(options);
-            System.IO.File.WriteAllText(settingsFilePath, optionsXml);
+            XElement options = new XElement("options");
+            options.Add(new XElement("LocationX", this.options.Location.X));
+            options.Add(new XElement("LocationY", this.options.Location.Y));
+            options.Add(new XElement("SizeWidth", this.options.Size.Width));
+            options.Add(new XElement("SizeHeight", this.options.Size.Height));
+            options.Add(new XElement("Maximised", this.options.Maximised?"1":"0"));
+            options.Add(new XElement("Maximised", this.options.Minimised ? "1" : "0"));
+            options.Add(new XElement("FirstRun", this.options.firstRun ? "1" : "0"));
+            options.Add(new XElement("MostTop", this.options.mostTop ? "1" : "0"));
+            options.Add(new XElement("Font", this.options.font));
+            options.Add(new XElement("RememberState", this.options.rememberState ? "1" : "0"));
+            options.Add(new XElement("ShowInTaskbar", this.options.ShowInTaskbar ? "1" : "0"));
+
+            XElement nodes = new XElement("Nodes");
+            options.Add(nodes);
+
+            List<TreeNode> allNodes = new List<TreeNode>();
+                
+            this.getNodes(allNodes, rootNode);
+
+            foreach (TreeNode node in allNodes) {
+                XElement nodeElement = new XElement("Node");
+
+                NodeDataModel nodeData = (NodeDataModel)node.Tag;
+
+                nodeElement.Add(new XElement("id", nodeData.id));
+                nodeElement.Add(new XElement("name", node.Text));
+                nodeElement.Add(new XElement("parent", nodeData.parent));
+                nodeElement.Add(new XElement("isRoot", nodeData.isRoot ? "1" : "0"));
+                nodeElement.Add(new XElement("isWindow", nodeData.isWindow ? "1" : "0"));
+                nodeElement.Add(new XElement("isFolder", nodeData.isFolder ? "1" : "0"));
+                nodeElement.Add(new XElement("isDeletable", nodeData.isDeletable ? "1" : "0"));
+                nodeElement.Add(new XElement("isMoovable", nodeData.isMoovable ? "1" : "0"));
+                nodeElement.Add(new XElement("isHidden", nodeData.isHidden ? "1" : "0"));
+                nodeElement.Add(new XElement("isRenamed", nodeData.isRenamed ? "1" : "0"));
+                nodeElement.Add(new XElement("isCurrentApp", nodeData.isCurrentApp ? "1" : "0"));   
+
+                nodes.Add(nodeElement);
+            }
+
+            System.IO.StreamWriter file = new System.IO.StreamWriter(settingsFilePath);
+            file.Write(options);
+            file.Close();
+        }
+
+        public void getNodes(List<TreeNode> nodes, TreeNode node) {
+            nodes.Add(node);
+            foreach (TreeNode child in node.Nodes) {
+                this.getNodes(nodes, child);
+            }
+        }
+
+        public void restoreNodes(List<TreeNode> list, TreeNode parent)
+        {
+
+            NodeDataModel parentData = (NodeDataModel)parent.Tag;
+
+            foreach (TreeNode element in list)
+            {
+                NodeDataModel nodeData = (NodeDataModel)element.Tag;
+
+                if (parentData.id == nodeData.parent) {
+                    parent.Nodes.Add(element);
+                    this.restoreNodes(list, element);
+                }
+            }
+        }
+
+        public decimal StringToDecimal(string text)
+        {
+            return decimal.Parse(
+                text,
+                NumberStyles.AllowParentheses |
+                NumberStyles.AllowLeadingWhite |
+                NumberStyles.AllowTrailingWhite |
+                NumberStyles.AllowThousands |
+                NumberStyles.AllowDecimalPoint |
+                NumberStyles.AllowLeadingSign,
+                NumberFormatInfo.InvariantInfo
+            );
         }
 
         public void restoreFormSettings()
@@ -96,26 +179,196 @@ namespace TaskList
                 return;
             }
 
-            string optionsXml = System.IO.File.ReadAllText(settingsFilePath);
-            OptionsModel options = SerializationManager.Deserialize<OptionsModel>(optionsXml);
-
-            if (options != null)
+            XmlReaderSettings xws = new XmlReaderSettings
             {
-                this.options = options;
+                CheckCharacters = false
+            };
+
+            string xml = "";
+
+            try
+            {
+                using (StreamReader streamReader = new StreamReader(settingsFilePath, Encoding.UTF8))
+                {
+                    xml = streamReader.ReadToEnd();
+                }
+            }
+            catch (System.IO.IOException ex)
+            {
+               Log.write(ex.Message);
             }
 
+            TreeNode rootNode = null;
+            List<TreeNode> allNodes = new List<TreeNode>();
 
-            if (options.firstRun)
+            try
+            {
+                using (XmlReader xr = XmlReader.Create(new StringReader(xml), xws))
+                {
+
+                    XElement root = XElement.Load(xr);
+                    
+                    foreach (XElement option in root.Elements())
+                    {
+                        if (option.Name.ToString() == "LocationX")
+                        {
+                            this.options.Location.X = (int)StringToDecimal(option.Value);
+                        }
+
+                        if (option.Name.ToString() == "LocationY")
+                        {
+                            this.options.Location.Y = (int)StringToDecimal(option.Value);
+                        }
+
+                        if (option.Name.ToString() == "SizeWidth")
+                        {
+                            this.options.Size.Width = (int)StringToDecimal(option.Value);
+                        }
+
+                        if (option.Name.ToString() == "SizeHeight")
+                        {
+                            this.options.Size.Height = (int)StringToDecimal(option.Value);
+                        }
+
+                        if (option.Name.ToString() == "Maximised")
+                        {
+                            this.options.Maximised = option.Value == "1";
+                        }
+
+                        if (option.Name.ToString() == "Maximised")
+                        {
+                            this.options.Minimised = option.Value == "1";
+                        }
+
+                        if (option.Name.ToString() == "FirstRun")
+                        {
+                            this.options.firstRun = option.Value == "1";
+                        }
+
+                        if (option.Name.ToString() == "MostTop")
+                        {
+                            this.options.mostTop = option.Value == "1";
+                        }
+
+                        if (option.Name.ToString() == "Font")
+                        {
+                            this.options.font = option.Value;
+                        }
+
+                        if (option.Name.ToString() == "RememberState")
+                        {
+                            this.options.rememberState = option.Value == "1";
+                        }
+
+                        if (option.Name.ToString() == "ShowInTaskbar")
+                        {
+                            this.options.ShowInTaskbar = option.Value == "1";
+                        }
+
+                        if (option.Name.ToString() == "Nodes")
+                        {
+                            foreach (XElement node in option.Elements())
+                            {
+                                if (node.Name.ToString() == "Node")
+                                {
+                                    TreeNode newNode = new TreeNode();
+                                    NodeDataModel newNodeData = new NodeDataModel();
+                                    newNode.Tag = newNodeData;
+                                    allNodes.Add(newNode);
+
+                                    foreach (XElement attribute in node.Elements())
+                                    {
+                                        if (attribute.Name.ToString() == "id")
+                                        {
+                                            newNodeData.id = Int32.Parse(attribute.Value);
+                                        }
+
+                                        if (attribute.Name.ToString() == "name")
+                                        {
+                                            newNode.Text = attribute.Value;
+                                        }
+
+                                        if (attribute.Name.ToString() == "parent")
+                                        {
+                                            newNodeData.parent = Int32.Parse(attribute.Value);
+                                        }
+
+                                        if (attribute.Name.ToString() == "isRoot")
+                                        {
+                                            newNodeData.isRoot = attribute.Value == "1";
+                                        }
+
+                                        if (attribute.Name.ToString() == "isWindow")
+                                        {
+                                            newNodeData.isWindow = attribute.Value == "1";
+                                        }
+
+                                        if (attribute.Name.ToString() == "isFolder")
+                                        {
+                                            newNodeData.isFolder = attribute.Value == "1";
+                                        }
+
+                                        if (attribute.Name.ToString() == "isDeletable")
+                                        {
+                                            newNodeData.isDeletable = attribute.Value == "1";
+                                        }
+
+                                        if (attribute.Name.ToString() == "isMoovable")
+                                        {
+                                            newNodeData.isMoovable = attribute.Value == "1";
+                                        }
+
+                                        if (attribute.Name.ToString() == "isHidden")
+                                        {
+                                            newNodeData.isHidden = attribute.Value == "1";
+                                        }
+
+                                        if (attribute.Name.ToString() == "isRenamed")
+                                        {
+                                            newNodeData.isRenamed = attribute.Value == "1";
+                                        }
+
+                                        if (attribute.Name.ToString() == "isCurrentApp")
+                                        {
+                                            newNodeData.isCurrentApp = attribute.Value == "1";
+                                        }
+                                    }
+
+                                    if (newNodeData.parent == 0) {
+
+                                        rootNode = newNode;
+                                    }
+                                }
+                            }
+                        }
+
+                    }
+
+                    
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.write(ex.Message);
+            }
+
+            if (rootNode != null)
+            {
+                this.restoreNodes(allNodes, rootNode);
+                treeView.Nodes.Add(rootNode);
+            }
+
+            if (this.options.firstRun)
             {
                 options.firstRun = false;
             }
-            else if (options.Maximised)
+            else if (this.options.Maximised)
             {
                 this.WindowState = FormWindowState.Maximized;
                 this.Location = options.Location;
                 this.Size = options.Size;
             }
-            else if (options.Minimised)
+            else if (this.options.Minimised)
             {
                 this.WindowState = FormWindowState.Minimized;
                 this.Location = options.Location;
@@ -138,9 +391,25 @@ namespace TaskList
 
             this.setTopMost(options.mostTop);
 
-            if (options.font != null)
+            rememberToolStripMenuItem.Checked = options.rememberState;
+
+            showInTaskbarToolStripMenuItem.Checked = this.options.ShowInTaskbar;
+
+            if (!this.options.ShowInTaskbar)
             {
-                this.treeView.Font = TypeDescriptor.GetConverter(typeof(Font)).ConvertFromInvariantString(options.font) as Font;
+
+                this.ShowInTaskbar = false;
+                this.FormBorderStyle = FormBorderStyle.SizableToolWindow;
+            }
+            else
+            {
+                this.ShowInTaskbar = true;
+                this.FormBorderStyle = FormBorderStyle.Sizable;
+            }
+
+            if (this.options.font != null)
+            {
+                this.treeView.Font = TypeDescriptor.GetConverter(typeof(Font)).ConvertFromInvariantString(this.options.font) as Font;
             }
         }
 
@@ -152,33 +421,41 @@ namespace TaskList
             this.Text += " - DEBUG";
 #endif
 
+            this.restoreFormSettings();
+
             treeView.BeginUpdate();
 
             this.imageList.ImageSize = new System.Drawing.Size(16, 16);
             treeView.ImageList = this.imageList;
 
             Bitmap defaultIcon = new Bitmap(System.Reflection.Assembly.GetEntryAssembly().GetManifestResourceStream("TaskList.Resources.TaskList.ico"));
-            this.defaultIconIndex = this.imageIndex++;
+            this.defaultIconIndex = this.lastImageIndex++;
             this.imageList.Images.Add("image" + this.defaultIconIndex, (Image)defaultIcon);
 
             Bitmap folderIcon = new Bitmap(System.Reflection.Assembly.GetEntryAssembly().GetManifestResourceStream("TaskList.Resources.folder.ico"));
-            this.folderIconIndex = this.imageIndex++;
+            this.folderIconIndex = this.lastImageIndex++;
             this.imageList.Images.Add("image" + this.folderIconIndex, (Image)folderIcon);
 
             var rootNodeData = new NodeDataModel();
+            rootNodeData.id = ++this.lastNodeIndex;
+            rootNodeData.parent = 0;
             rootNodeData.isRoot = true;
             rootNodeData.isMoovable = false;
             rootNodeData.image = defaultIcon;
             this.rootNode = treeView.Nodes.Add("Tasks", "Tasks", this.defaultIconIndex, this.defaultIconIndex);
             this.rootNode.Tag = rootNodeData;
 
-            var processiesNodeData = new NodeDataModel();
+            /*var processiesNodeData = new NodeDataModel();
+            processiesNodeData.id = ++this.lastNodeIndex;
+            rootNodeData.parent = rootNodeData.id;
             processiesNodeData.isMoovable = false;
             rootNodeData.image = defaultIcon;
             this.processiesNode = rootNode.Nodes.Add("Processies", "Processies", this.defaultIconIndex, this.defaultIconIndex);
-            this.processiesNode.Tag = processiesNodeData;
+            this.processiesNode.Tag = processiesNodeData;*/
 
             var windowsNodeData = new NodeDataModel();
+            windowsNodeData.id = ++this.lastNodeIndex;
+            windowsNodeData.parent = rootNodeData.id;
             windowsNodeData.isMoovable = false;
             this.windowsNode = rootNode.Nodes.Add("Windows", "Windows", this.defaultIconIndex, this.defaultIconIndex);
             rootNodeData.image = defaultIcon;
@@ -186,14 +463,13 @@ namespace TaskList
 
             this.updatTree();
 
+
             rootNode.Expand();
 
             windowsNode.Expand();
             treeView.EndUpdate();
 
             autorunToolStripMenuItem.Checked = SystemManager.isAutorunSet();
-
-            this.restoreFormSettings();
 
             this.updateTimer.Enabled = true;
         }
@@ -209,6 +485,8 @@ namespace TaskList
             this.saveFormSettings();            
         }
 
+        public object Os { get; private set; }
+
         /* UPDATE TREEVIEW */
 
         private void update_Tick(object sender, EventArgs e)
@@ -223,96 +501,15 @@ namespace TaskList
 
             IntPtr currentAppHandle = this.Handle;
 
-            //process add 
-
-            Process[] processies = TaskManager.getProcessies();
-
             List<TreeNode> toRemoveNodes = new List<TreeNode>();
 
-            foreach (Process process in processies)
-            {
-                bool exists = false;
-                foreach (TreeNode oldNode in this.allProcessiesNodes)
-                {
-                    var oldNodeData = (NodeDataModel)oldNode.Tag;
-
-                    if (oldNodeData.process.Id == process.Id)
-                    {
-
-                        if (!oldNodeData.isRenamed && process.ProcessName != oldNode.Text) {
-                            oldNode.Text = process.ProcessName;
-                        }
-
-                        exists = true;
-                        break;
-                    }
-                }
-
-                if (exists)
-                {
-                    continue;
-                }
-
-                var nodeData = new NodeDataModel();
-                nodeData.isProcess = true;
-                nodeData.isCurrentApp = (currentAppHandle == nodeData.handle);
-                nodeData.process = process;
-
-                try
-                {
-                    /* todo: it is slow  skip for now */
-                    /*nodeData.image = TaskManager.GetSmallWindowIcon(process.Handle);
-                    this.imageList.Images.Add("image" + this.imageIndex, (Image)nodeData.image);*/
-                }
-                catch (System.ComponentModel.Win32Exception e) {
-                    Log.write("Exception: " + e.Message);
-                    nodeData.image = null;
-                }
-                catch (System.InvalidOperationException e)
-                {
-                    Log.write("Exception: " + e.Message);
-                    nodeData.image = null;
-                }
-
-                TreeNode node = null;
-                if (nodeData.image == null) {
-                    node = processiesNode.Nodes.Add(process.ProcessName);
-                }
-                else {
-                    node = processiesNode.Nodes.Add(process.ProcessName, process.ProcessName, this.imageIndex, this.imageIndex++);
-                }
-
-                node.Tag = nodeData;
-
-                this.allNodes.Add(node);
-                this.allProcessiesNodes.Add(node);
-            }
-
-
-            foreach (TreeNode oldNode in this.allProcessiesNodes)
-            {
-
-                NodeDataModel nodeData = (NodeDataModel)oldNode.Tag;
-                bool exists = false;
-                foreach (Process process in processies)
-                {
-                    if (nodeData.process.Id == process.Id)
-                    {
-                        exists = true;
-                        break;
-                    }
-                }
-
-
-                if (!exists)
-                {
-                    toRemoveNodes.Add(oldNode);
-                }
-            }
+            
 
 
             // windows add 
             IDictionary<IntPtr, string> windowsList = TaskManager.GetOpenWindows();
+
+            NodeDataModel windowsNodeData = (NodeDataModel)windowsNode.Tag;
 
             foreach (KeyValuePair<IntPtr, string> window in windowsList)
             {
@@ -345,14 +542,16 @@ namespace TaskList
                 }
 
                 var nodeData = new NodeDataModel();
+                nodeData.id = ++this.lastNodeIndex;
+                nodeData.parent = windowsNodeData.id;
                 nodeData.isWindow = true;
                 nodeData.process = null;
                 nodeData.handle = window.Key;
                 nodeData.isCurrentApp = currentAppHandle == nodeData.handle;
                 nodeData.image = TaskManager.GetSmallWindowIcon(nodeData.handle);
 
-                this.imageList.Images.Add("image" + this.imageIndex, (Image)nodeData.image);
-                var node = windowsNode.Nodes.Add(window.Value, window.Value, this.imageIndex, this.imageIndex++);
+                this.imageList.Images.Add("image" + this.lastImageIndex, (Image)nodeData.image);
+                var node = windowsNode.Nodes.Add(window.Value, window.Value, this.lastImageIndex, this.lastImageIndex++);
                 node.Tag = nodeData;
 
                 this.allNodes.Add(node);
@@ -383,7 +582,6 @@ namespace TaskList
 
             foreach (TreeNode oldNode in toRemoveNodes)
             {
-                this.allProcessiesNodes.Remove(oldNode);
                 this.allWindowsNodes.Remove(oldNode);
                 this.allNodes.Remove(oldNode);
 
@@ -600,9 +798,16 @@ namespace TaskList
                 return;
             }
 
-            TreeNode node = treeView.SelectedNode.Nodes.Add("Folder", "Folder", this.folderIconIndex, this.folderIconIndex);
+
+            TreeNode parentNode = treeView.SelectedNode;
+
+            NodeDataModel parentNodeData = (NodeDataModel)parentNode.Tag;
+
+            TreeNode node = parentNode.Nodes.Add("Folder", "Folder", this.folderIconIndex, this.folderIconIndex);
 
             NodeDataModel nodeData = new NodeDataModel();
+            nodeData.id = ++this.lastNodeIndex;
+            nodeData.parent = parentNodeData.id;
             nodeData.isFolder = true;
             node.Tag = nodeData;
             
@@ -754,12 +959,38 @@ namespace TaskList
             }
         }
 
+        private void rememberToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Log.write("rememberToolStripMenuItem_Click");
+            this.options.rememberState = !this.options.rememberState;
+            rememberToolStripMenuItem.Checked = this.options.rememberState;
+        }
+
+        private void showInTaskbarToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Log.write("showInTaskbarToolStripMenuItem_Click");
+            this.options.ShowInTaskbar = !this.options.ShowInTaskbar;
+            showInTaskbarToolStripMenuItem.Checked = this.options.ShowInTaskbar;
+
+            if (!this.options.ShowInTaskbar)
+            {
+
+                this.ShowInTaskbar = false;
+                this.FormBorderStyle = FormBorderStyle.SizableToolWindow;
+            }
+            else
+            {
+                this.ShowInTaskbar = true;
+                this.FormBorderStyle = FormBorderStyle.Sizable;
+            }
+        }
+
         private void showDesktopToolStripMenuItem_Click(object sender, EventArgs e)
         {
             Log.write("showDesktopToolStripMenuItem_Click");
             TaskManager.ShowDesktop();
         }
 
-        
+
     }
 }

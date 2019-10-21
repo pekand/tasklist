@@ -15,5 +15,7 @@ namespace TaskList
         public bool firstRun = true;
         public bool mostTop = false;
         public string font = null;
+        public bool rememberState = false;
+        public bool ShowInTaskbar = true;
     }
 }

@@ -324,6 +324,67 @@ namespace TaskList
             SendMessage(hWnd, WM_SYSCOMMAND, SC_CLOSE, IntPtr.Zero);
         }
 
-        
+        public static Process FindProcess(IntPtr yourHandle)
+        {
+
+            foreach (Process p in Process.GetProcesses())
+            {
+                try
+                {
+                    if (p.Handle == yourHandle)
+                    {
+                        return p;
+                    }
+                }
+                catch (System.InvalidOperationException e) {
+                    Log.write(e.Message);
+                }
+                catch (System.ComponentModel.Win32Exception e)
+                {
+                    Log.write(e.Message);
+                }
+            }
+            
+
+            return null;
+        }
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        public static extern uint GetProcessId(IntPtr handle);
+
+        public static Process GetProcessByHandle(IntPtr handle)
+        {
+            try
+            {
+                uint ProcessId = GetProcessId(handle);
+
+                return Process.GetProcessById((int)ProcessId);
+            } catch (System.ArgumentException e) {
+                Log.write(e.Message);
+            }
+
+            return null;
+        }
+
+        public static string GetProcessFileName(IntPtr handle)
+        {
+            string FileName = "";
+
+            try
+            {
+                Process process = GetProcessByHandle(handle);
+
+                if (process == null || process.Id == 0) {
+                    return null;
+                }
+
+                FileName = process.MainModule.FileName;
+
+            } catch (System.ComponentModel.Win32Exception e) {
+                Log.write(e.Message);
+            }
+
+            return FileName;
+        }
     }
 }

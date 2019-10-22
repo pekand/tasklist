@@ -19,11 +19,9 @@ namespace TaskList
         public OptionsModel options = new OptionsModel();
 
         TreeNode rootNode = null;
-        //TreeNode processiesNode = null;
-        TreeNode windowsNode = null;
+        TreeNode windowsRootNode = null;
 
         List<TreeNode> allNodes = new List<TreeNode>();
-        //List<TreeNode> allProcessiesNodes = new List<TreeNode>();
         List<TreeNode> allWindowsNodes = new List<TreeNode>();
         List<TreeNode> allFolderNodes = new List<TreeNode>();
 
@@ -107,10 +105,21 @@ namespace TaskList
 
                 NodeDataModel nodeData = (NodeDataModel)node.Tag;
 
+                if (nodeData.isWindow)
+                {
+                    if (node.Nodes.Count > 0) {
+                        nodeData.isFolder = true;
+                        nodeData.isWindow = false;
+                    } else {
+                        continue;
+                    }
+                }
+
                 nodeElement.Add(new XElement("id", nodeData.id));
                 nodeElement.Add(new XElement("name", node.Text));
                 nodeElement.Add(new XElement("parent", nodeData.parent));
                 nodeElement.Add(new XElement("isRoot", nodeData.isRoot ? "1" : "0"));
+                nodeElement.Add(new XElement("isWindowsRoot", nodeData.isWindowsRoot ? "1" : "0"));
                 nodeElement.Add(new XElement("isWindow", nodeData.isWindow ? "1" : "0"));
                 nodeElement.Add(new XElement("isFolder", nodeData.isFolder ? "1" : "0"));
                 nodeElement.Add(new XElement("isDeletable", nodeData.isDeletable ? "1" : "0"));
@@ -127,16 +136,17 @@ namespace TaskList
             file.Close();
         }
 
-        public void getNodes(List<TreeNode> nodes, TreeNode node) {
+        public void getNodes(List<TreeNode> nodes, TreeNode node, int level = 10) {
+            if (level == 0) return;
             nodes.Add(node);
             foreach (TreeNode child in node.Nodes) {
-                this.getNodes(nodes, child);
+                this.getNodes(nodes, child, level-1);
             }
         }
 
-        public void restoreNodes(List<TreeNode> list, TreeNode parent)
+        public void restoreNodes(List<TreeNode> list, TreeNode parent, int level = 10)
         {
-
+            if (level == 0) return;
             NodeDataModel parentData = (NodeDataModel)parent.Tag;
 
             foreach (TreeNode element in list)
@@ -145,7 +155,7 @@ namespace TaskList
 
                 if (parentData.id == nodeData.parent) {
                     parent.Nodes.Add(element);
-                    this.restoreNodes(list, element);
+                    this.restoreNodes(list, element, level - 1);
                 }
             }
         }
@@ -198,7 +208,7 @@ namespace TaskList
                Log.write(ex.Message);
             }
 
-            TreeNode rootNode = null;
+            int lastNodeIndex = 0;
             List<TreeNode> allNodes = new List<TreeNode>();
 
             try
@@ -281,6 +291,9 @@ namespace TaskList
                                         if (attribute.Name.ToString() == "id")
                                         {
                                             newNodeData.id = Int32.Parse(attribute.Value);
+                                            if (lastNodeIndex<newNodeData.id) {
+                                                lastNodeIndex = newNodeData.id;
+                                            }
                                         }
 
                                         if (attribute.Name.ToString() == "name")
@@ -301,6 +314,11 @@ namespace TaskList
                                         if (attribute.Name.ToString() == "isWindow")
                                         {
                                             newNodeData.isWindow = attribute.Value == "1";
+                                        }
+
+                                        if (attribute.Name.ToString() == "isWindowsRoot")
+                                        {
+                                            newNodeData.isWindowsRoot = attribute.Value == "1";
                                         }
 
                                         if (attribute.Name.ToString() == "isFolder")
@@ -334,10 +352,17 @@ namespace TaskList
                                         }
                                     }
 
-                                    if (newNodeData.parent == 0) {
+                                    if (newNodeData.isRoot) {
 
-                                        rootNode = newNode;
+                                        this.rootNode = newNode;
                                     }
+
+                                    if (newNodeData.isWindowsRoot)
+                                    {
+                                        this.windowsRootNode = newNode;
+                                    }
+                                    
+
                                 }
                             }
                         }
@@ -352,10 +377,11 @@ namespace TaskList
                 Log.write(ex.Message);
             }
 
-            if (rootNode != null)
+            if (this.rootNode != null)
             {
-                this.restoreNodes(allNodes, rootNode);
+                this.restoreNodes(allNodes, this.rootNode);
                 treeView.Nodes.Add(rootNode);
+                this.lastNodeIndex = lastNodeIndex;
             }
 
             if (this.options.firstRun)
@@ -436,37 +462,36 @@ namespace TaskList
             this.folderIconIndex = this.lastImageIndex++;
             this.imageList.Images.Add("image" + this.folderIconIndex, (Image)folderIcon);
 
-            var rootNodeData = new NodeDataModel();
-            rootNodeData.id = ++this.lastNodeIndex;
-            rootNodeData.parent = 0;
-            rootNodeData.isRoot = true;
-            rootNodeData.isMoovable = false;
-            rootNodeData.image = defaultIcon;
-            this.rootNode = treeView.Nodes.Add("Tasks", "Tasks", this.defaultIconIndex, this.defaultIconIndex);
-            this.rootNode.Tag = rootNodeData;
 
-            /*var processiesNodeData = new NodeDataModel();
-            processiesNodeData.id = ++this.lastNodeIndex;
-            rootNodeData.parent = rootNodeData.id;
-            processiesNodeData.isMoovable = false;
-            rootNodeData.image = defaultIcon;
-            this.processiesNode = rootNode.Nodes.Add("Processies", "Processies", this.defaultIconIndex, this.defaultIconIndex);
-            this.processiesNode.Tag = processiesNodeData;*/
+            if (this.rootNode == null) {
+                var rootNodeData = new NodeDataModel();
+                rootNodeData.id = ++this.lastNodeIndex;
+                rootNodeData.parent = 0;
+                rootNodeData.isRoot = true;
+                rootNodeData.isMoovable = false;
+                rootNodeData.image = defaultIcon;
+                this.rootNode = treeView.Nodes.Add("Tasks", "Tasks", this.defaultIconIndex, this.defaultIconIndex);
+                this.rootNode.Tag = rootNodeData;
+            }
 
-            var windowsNodeData = new NodeDataModel();
-            windowsNodeData.id = ++this.lastNodeIndex;
-            windowsNodeData.parent = rootNodeData.id;
-            windowsNodeData.isMoovable = false;
-            this.windowsNode = rootNode.Nodes.Add("Windows", "Windows", this.defaultIconIndex, this.defaultIconIndex);
-            rootNodeData.image = defaultIcon;
-            this.windowsNode.Tag = windowsNodeData;
+            if (this.windowsRootNode == null)
+            {
+                var windowsNodeData = new NodeDataModel();
+                windowsNodeData.id = ++this.lastNodeIndex;
+                windowsNodeData.parent = ((NodeDataModel)this.rootNode.Tag).id;
+                windowsNodeData.isMoovable = false;
+                windowsNodeData.isWindowsRoot = true;
+                this.windowsRootNode = rootNode.Nodes.Add("Windows", "Windows", this.defaultIconIndex, this.defaultIconIndex);
+                ((NodeDataModel)this.rootNode.Tag).image = defaultIcon;
+                this.windowsRootNode.Tag = windowsNodeData;
+            }
 
             this.updatTree();
 
 
             rootNode.Expand();
 
-            windowsNode.Expand();
+            windowsRootNode.Expand();
             treeView.EndUpdate();
 
             autorunToolStripMenuItem.Checked = SystemManager.isAutorunSet();
@@ -503,13 +528,10 @@ namespace TaskList
 
             List<TreeNode> toRemoveNodes = new List<TreeNode>();
 
-            
-
-
             // windows add 
             IDictionary<IntPtr, string> windowsList = TaskManager.GetOpenWindows();
 
-            NodeDataModel windowsNodeData = (NodeDataModel)windowsNode.Tag;
+            NodeDataModel windowsNodeData = (NodeDataModel)windowsRootNode.Tag;
 
             foreach (KeyValuePair<IntPtr, string> window in windowsList)
             {
@@ -551,7 +573,7 @@ namespace TaskList
                 nodeData.image = TaskManager.GetSmallWindowIcon(nodeData.handle);
 
                 this.imageList.Images.Add("image" + this.lastImageIndex, (Image)nodeData.image);
-                var node = windowsNode.Nodes.Add(window.Value, window.Value, this.lastImageIndex, this.lastImageIndex++);
+                var node = windowsRootNode.Nodes.Add(window.Value, window.Value, this.lastImageIndex, this.lastImageIndex++);
                 node.Tag = nodeData;
 
                 this.allNodes.Add(node);

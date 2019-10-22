@@ -55,7 +55,7 @@
             this.tableLayoutPanel = new System.Windows.Forms.TableLayoutPanel();
             this.fontDialog = new System.Windows.Forms.FontDialog();
             this.showInTaskbarToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.treeView = new TaskList.CustomTreeView();
+            this.treeView = new System.Windows.Forms.TreeView();
             this.contextMenuStrip.SuspendLayout();
             this.menuStrip.SuspendLayout();
             this.tableLayoutPanel.SuspendLayout();
@@ -303,7 +303,7 @@
         #endregion
         
 
-        private CustomTreeView treeView;
+        private System.Windows.Forms.TreeView treeView;
 
         private System.Windows.Forms.Timer updateTimer;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel;

@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -131,5 +132,11 @@ namespace TaskList
             return rkApp.GetValue("TaskList").ToString() == Application.ExecutablePath.ToString();
         }
 
+
+        public static void runApplication(string path) {
+            if (File.Exists(path)) {
+                Process.Start(path);
+            }
+        }
     }
 }

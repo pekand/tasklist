@@ -9,17 +9,24 @@ namespace TaskList
 {
     public static class Log
     {
+#if DEBUG
+        public static bool directoryExists = false;
+        public static string logFileName = String.Format("log\\{0}-log.txt", DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss"));
+#endif
 
         public static void write(string text = "") {
 #if DEBUG
-            File.AppendAllText(@"log.txt", text + Environment.NewLine);
-#endif
-        }
+            if (!directoryExists && !Directory.Exists("log"))
+            {
+                Directory.CreateDirectory("log");
+                directoryExists = true;
+            }
 
-        public static void clear()
-        {
-#if DEBUG
-            File.WriteAllText(@"log.txt", "");
+            if (!Directory.Exists("log")) {
+                Directory.CreateDirectory("log");
+            }
+
+            File.AppendAllText(logFileName, text + Environment.NewLine);
 #endif
         }
     }

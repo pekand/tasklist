@@ -64,6 +64,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ImageManager.cs" />
     <Compile Include="Log.cs" />
     <Compile Include="OptionsModel.cs" />
     <Compile Include="SerializationManager.cs" />

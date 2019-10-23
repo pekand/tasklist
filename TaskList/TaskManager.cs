@@ -12,17 +12,17 @@ using System.Xml.Serialization;
 
 namespace TaskList
 {
+
+    public class WindowProcessPair
+    {
+        public IntPtr handle = IntPtr.Zero;
+        public Process process = null;
+    }
+
     public static class TaskManager
     {
 
-        public static Process[] getProcessies()
-        {
-            Log.write("TaskManager getProcessies");
-            Process[] tasks = System.Diagnostics.Process.GetProcesses().OrderBy(p => p.ProcessName).ToArray();
-
-            return tasks;
-        }
-
+        /********************************************************************/
         /* List windows */
 
         private delegate bool EnumDesktopWindowsDelegate(IntPtr hWnd, int lParam);
@@ -53,13 +53,13 @@ namespace TaskList
             return isPopup;
         }
 
-        public static IDictionary<IntPtr, string> GetOpenWindows()
+        public static List<IntPtr> GetOpenWindows()
         {
             Log.write("TaskManager GetOpenWindows");
             IntPtr shellWindow = GetShellWindow();
-            Dictionary<IntPtr, string> windows = new Dictionary<IntPtr, string>();
+            List<IntPtr> windows = new List<IntPtr>();
 
-            IntPtr hDesktop = IntPtr.Zero; // current desktop
+            IntPtr hDesktop = IntPtr.Zero;
             EnumDesktopWindows(hDesktop, delegate(IntPtr IntPtr, int lParam)
             {
                 if (IntPtr == shellWindow)
@@ -74,10 +74,7 @@ namespace TaskList
                 int length = GetWindowTextLength(IntPtr);
                 if (length == 0) return true;
 
-                StringBuilder builder = new StringBuilder(length);
-                GetWindowText(IntPtr, builder, length + 1);
-
-                windows[IntPtr] = builder.ToString();
+                windows.Add(IntPtr);
                 return true;
 
             }, IntPtr.Zero);
@@ -85,90 +82,15 @@ namespace TaskList
             return windows;
         }
 
-        public static string[] GetDesktopWindowsTitles()
-        {
-            Log.write("TaskManager GetDesktopWindowsTitles");
-            List<string> lstTitles = new List<string>();
 
-            foreach (KeyValuePair<IntPtr, string> window in GetOpenWindows())
-            {
-                IntPtr handle = window.Key;
-                string title = window.Value;
-
-                lstTitles.Add(handle + " " + title);
-            }
-
-            return lstTitles.ToArray();
-        }
-
-        //*******// Show Hide Application
-
-        public static void hideApp(string name)
-        {
-            Log.write("TaskManager hideApp");
-            const int SW_HIDE = 0;
-
-            IntPtr IntPtr;
-            Process[] processRunning = Process.GetProcesses();
-            foreach (Process pr in processRunning)
-            {
-                if (pr.ProcessName == name)
-                {
-                    IntPtr = pr.MainWindowHandle;
-                    ShowWindow(IntPtr, SW_HIDE);
-                }
-            }
-        }
-
-        public static void showApp(string name)
-        {
-            Log.write("TaskManager showApp");
-
-            const int SW_SHOW = 5;
-
-            IntPtr IntPtr;
-            Process[] processRunning = Process.GetProcesses();
-            foreach (Process pr in processRunning)
-            {
-                if (pr.ProcessName == name)
-                {
-                    IntPtr = pr.MainWindowHandle;
-                    ShowWindow(IntPtr, SW_SHOW);
-                }
-            }
-        }
-
-        public static void hideApp(IntPtr IntPtr)
-        {
-            Log.write("TaskManager hideApp");
-            const int SW_HIDE = 0;
-
-            ShowWindow(IntPtr, SW_HIDE);
-        }
-
-        public static void showApp(IntPtr IntPtr)
-        {
-            const int SW_SHOW = 5;
-            Log.write("TaskManager showApp");
-            ShowWindow(IntPtr, SW_SHOW);
-        }
-
+        /********************************************************************/
         //*******// Activate window
 
         [DllImport("user32.dll")]
+        static extern bool ShowWindow(IntPtr IntPtr, int nCmdShow);
+
+        [DllImport("user32.dll")]
         private static extern bool SetForegroundWindow(IntPtr hWnd);
-
-        public static IntPtr GetProcessesByName(string name)
-        {
-            Log.write("TaskManager GetProcessesByName");
-            var prc = Process.GetProcessesByName(name);
-            if (prc.Length > 0)
-            {
-                return prc[0].MainWindowHandle;
-            }
-
-            return IntPtr.Zero;
-        }
 
         public static void setForegroundWindow(IntPtr hWnd)
         {
@@ -184,26 +106,7 @@ namespace TaskList
             SetForegroundWindow(hWnd);
         }
 
-        [DllImport("user32.dll")]
-        static extern bool ShowWindow(IntPtr IntPtr, int nCmdShow);
-
-        //*******// All processies
-
-        public static List<Process> getProcessesNames()
-        {
-            Log.write("TaskManager getProcessesNames");
-            Process[] processRunning = Process.GetProcesses();
-
-            List<Process> lstTitles = new List<Process>();
-
-            foreach (Process pr in processRunning)
-            {
-                lstTitles.Add(pr);
-            }
-
-            return lstTitles;
-        }
-
+        /********************************************************************/
         //*******// Get Icon
 
         [DllImport("user32.dll")]
@@ -273,7 +176,7 @@ namespace TaskList
             }
         }
 
-
+        /********************************************************************/
         //*******// Check if is still opened
 
         [DllImport("user32.dll")]
@@ -286,6 +189,7 @@ namespace TaskList
             return IsWindow(hWnd);
         }
 
+        /********************************************************************/
         /* Check if window is minimalized */
 
         [DllImport("user32.dll")]
@@ -297,6 +201,8 @@ namespace TaskList
             Log.write("TaskManager isMinimalized");
             return IsIconic(hWnd);
         }
+        
+        /********************************************************************/
 
         public static void ShowDesktop()
         {
@@ -305,15 +211,17 @@ namespace TaskList
             const int SW_MINIMIZE = 6;
             IntPtr handle = Process.GetCurrentProcess().MainWindowHandle;
 
-            IDictionary<IntPtr, string> windowsList = TaskManager.GetOpenWindows();
+            List<IntPtr> windowsList = TaskManager.GetOpenWindows();
 
-            foreach (KeyValuePair<IntPtr, string> window in windowsList)
+            foreach (IntPtr window in windowsList)
             {
-                if (handle != window.Key) {
-                    ShowWindow(window.Key, SW_MINIMIZE);
+                if (handle != window) {
+                    ShowWindow(window, SW_MINIMIZE);
                 }
             }
         }
+
+        /********************************************************************/
 
         public static void CloseWindow(IntPtr hWnd)
         {
@@ -324,19 +232,94 @@ namespace TaskList
             SendMessage(hWnd, WM_SYSCOMMAND, SC_CLOSE, IntPtr.Zero);
         }
 
-        public static Process FindProcess(IntPtr yourHandle)
-        {
+        /********************************************************************/
 
-            foreach (Process p in Process.GetProcesses())
+        private delegate bool EnumWindowProc(IntPtr hwnd, IntPtr lParam);
+
+        [DllImport("user32")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool EnumChildWindows(IntPtr window, EnumWindowProc callback, IntPtr lParam);
+
+        private static bool EnumWindow(IntPtr hWnd, IntPtr lParam)
+        {
+            GCHandle gcChildhandlesList = GCHandle.FromIntPtr(lParam);
+
+            if (gcChildhandlesList == null || gcChildhandlesList.Target == null)
             {
+                return false;
+            }
+
+            List<IntPtr> childHandles = gcChildhandlesList.Target as List<IntPtr>;
+            childHandles.Add(hWnd);
+
+            return true;
+        }
+
+        public static List<IntPtr> GetAllChildHandles(IntPtr MainHandle)
+        {
+            List<IntPtr> childHandles = new List<IntPtr>();
+
+            GCHandle gcChildhandlesList = GCHandle.Alloc(childHandles);
+            IntPtr pointerChildHandlesList = GCHandle.ToIntPtr(gcChildhandlesList);
+
+            try
+            {
+                EnumWindowProc childProc = new EnumWindowProc(EnumWindow);
+                EnumChildWindows(MainHandle, childProc, pointerChildHandlesList);
+            }
+            finally
+            {
+                gcChildhandlesList.Free();
+            }
+
+            return childHandles;
+        }
+
+        public static List<WindowProcessPair> FindProcessByWithWindowHandle(List<IntPtr> windows)
+        {
+            List<WindowProcessPair> info = new List<WindowProcessPair>();
+
+            foreach (Process process in Process.GetProcesses())
+            {
+                
                 try
                 {
-                    if (p.Handle == yourHandle)
+                    if (process.MainWindowHandle == IntPtr.Zero || process.MainWindowTitle == "")
                     {
-                        return p;
+                        continue;
+                    }
+
+                    foreach (IntPtr window in windows)
+                    {
+
+                        List<IntPtr> childrenWindows = GetAllChildHandles(process.MainWindowHandle);
+
+                        foreach (IntPtr handle in childrenWindows)
+                        {
+                            if (handle == window)
+                            {
+                                WindowProcessPair pair = new WindowProcessPair();
+                                pair.handle = window;
+                                pair.process = process;
+                                info.Add(pair);
+                                continue;
+                            }
+                        }
+
+                        if (process.MainWindowHandle == window)
+                        {
+                            WindowProcessPair pair = new WindowProcessPair();
+                            pair.handle = window;
+                            pair.process = process;
+                            info.Add(pair);
+                            continue;
+                        }
+
+
                     }
                 }
-                catch (System.InvalidOperationException e) {
+                catch (System.InvalidOperationException e)
+                {
                     Log.write(e.Message);
                 }
                 catch (System.ComponentModel.Win32Exception e)
@@ -345,46 +328,20 @@ namespace TaskList
                 }
             }
             
-
-            return null;
+            return info;
         }
 
-        [DllImport("kernel32.dll", SetLastError = true)]
-        public static extern uint GetProcessId(IntPtr handle);
-
-        public static Process GetProcessByHandle(IntPtr handle)
+        /********************************************************************/
+        public static string getWindowTitle(IntPtr hWnd)
         {
-            try
-            {
-                uint ProcessId = GetProcessId(handle);
-
-                return Process.GetProcessById((int)ProcessId);
-            } catch (System.ArgumentException e) {
-                Log.write(e.Message);
-            }
-
-            return null;
+            var length = GetWindowTextLength(hWnd);
+            var title = new StringBuilder(length);
+            GetWindowText(hWnd, title, length);
+            return title.ToString();
         }
 
-        public static string GetProcessFileName(IntPtr handle)
-        {
-            string FileName = "";
+        /********************************************************************/
 
-            try
-            {
-                Process process = GetProcessByHandle(handle);
 
-                if (process == null || process.Id == 0) {
-                    return null;
-                }
-
-                FileName = process.MainModule.FileName;
-
-            } catch (System.ComponentModel.Win32Exception e) {
-                Log.write(e.Message);
-            }
-
-            return FileName;
-        }
     }
 }

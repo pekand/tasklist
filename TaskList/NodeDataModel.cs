@@ -12,9 +12,11 @@ namespace TaskList
     {
         public int id = 0;
         public int parent = -1;
+        public string title = null;
         public bool isRoot = false;
         public bool isWindowsRoot = false;
         public bool isWindow = false;
+        public bool isInactiveWindow = false;
         public bool isRunning = false;
         public bool isPinned = false;
         public bool isFolder = false;
@@ -23,7 +25,6 @@ namespace TaskList
         public bool isHidden = false;
         public bool isRenamed = false;
         public bool isCurrentApp = false;
-        public string name = "";
         public Process process = null;
         public IntPtr handle = IntPtr.Zero;
         public int imageIndex = -1;

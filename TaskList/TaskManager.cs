@@ -13,14 +13,26 @@ using System.Xml.Serialization;
 namespace TaskList
 {
 
-    public class WindowProcessPair
+    public class WindowData
     {
         public IntPtr handle = IntPtr.Zero;
+        public string title = null;
+        public Image image = null;
+        public string imageBase = null;
         public Process process = null;
+        public string path = null;
+
+        public WindowData(IntPtr handle, string title = null, Image image = null, Process process = null) {
+            this.handle = handle;
+            this.title = title;
+            this.image = image;
+            this.process = process;
+        }
     }
 
     public static class TaskManager
     {
+        
 
         /********************************************************************/
         /* List windows */
@@ -53,11 +65,11 @@ namespace TaskList
             return isPopup;
         }
 
-        public static List<IntPtr> GetOpenWindows()
+        public static List<WindowData> GetOpenWindows()
         {
             Log.write("TaskManager GetOpenWindows");
             IntPtr shellWindow = GetShellWindow();
-            List<IntPtr> windows = new List<IntPtr>();
+            List<WindowData> windows = new List<WindowData>();
 
             IntPtr hDesktop = IntPtr.Zero;
             EnumDesktopWindows(hDesktop, delegate(IntPtr IntPtr, int lParam)
@@ -74,7 +86,7 @@ namespace TaskList
                 int length = GetWindowTextLength(IntPtr);
                 if (length == 0) return true;
 
-                windows.Add(IntPtr);
+                windows.Add(new WindowData(IntPtr));
                 return true;
 
             }, IntPtr.Zero);
@@ -211,12 +223,12 @@ namespace TaskList
             const int SW_MINIMIZE = 6;
             IntPtr handle = Process.GetCurrentProcess().MainWindowHandle;
 
-            List<IntPtr> windowsList = TaskManager.GetOpenWindows();
+            List<WindowData> windowsList = TaskManager.GetOpenWindows();
 
-            foreach (IntPtr window in windowsList)
+            foreach (WindowData window in windowsList)
             {
-                if (handle != window) {
-                    ShowWindow(window, SW_MINIMIZE);
+                if (handle != window.handle) {
+                    ShowWindow(window.handle, SW_MINIMIZE);
                 }
             }
         }
@@ -275,10 +287,8 @@ namespace TaskList
             return childHandles;
         }
 
-        public static List<WindowProcessPair> FindProcessByWithWindowHandle(List<IntPtr> windows)
+        public static void FindProcessByWithWindowHandle(List<WindowData> windowData)
         {
-            List<WindowProcessPair> info = new List<WindowProcessPair>();
-
             foreach (Process process in Process.GetProcesses())
             {
                 
@@ -289,29 +299,23 @@ namespace TaskList
                         continue;
                     }
 
-                    foreach (IntPtr window in windows)
+                    foreach (WindowData window in windowData)
                     {
 
                         List<IntPtr> childrenWindows = GetAllChildHandles(process.MainWindowHandle);
 
                         foreach (IntPtr handle in childrenWindows)
                         {
-                            if (handle == window)
+                            if (handle == window.handle)
                             {
-                                WindowProcessPair pair = new WindowProcessPair();
-                                pair.handle = window;
-                                pair.process = process;
-                                info.Add(pair);
+                                window.process = process;
                                 continue;
                             }
                         }
 
-                        if (process.MainWindowHandle == window)
+                        if (process.MainWindowHandle == window.handle)
                         {
-                            WindowProcessPair pair = new WindowProcessPair();
-                            pair.handle = window;
-                            pair.process = process;
-                            info.Add(pair);
+                            window.process = process;
                             continue;
                         }
 
@@ -327,11 +331,10 @@ namespace TaskList
                     Log.write(e.Message);
                 }
             }
-            
-            return info;
         }
 
         /********************************************************************/
+
         public static string getWindowTitle(IntPtr hWnd)
         {
             var length = GetWindowTextLength(hWnd);
@@ -341,6 +344,17 @@ namespace TaskList
         }
 
         /********************************************************************/
+
+        [DllImport("user32.dll")]
+        static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
+
+        public static Process getProcessFromHandle(IntPtr handle) {
+            uint lpdwProcessId;
+            GetWindowThreadProcessId(handle, out lpdwProcessId);
+            return Process.GetProcessById((int)lpdwProcessId);
+        }
+        /********************************************************************/
+
 
 
     }

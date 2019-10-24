@@ -29,10 +29,14 @@ namespace TaskList
         int defaultIconIndex = 0;
         int folderIconIndex = 0;
 
+        IntPtr currentAppHandle = IntPtr.Zero;
+
         /* FORM EVENTS */
 
         public TaskListForm()
         {
+            currentAppHandle = this.Handle;
+
             Log.write("Constructor");
             InitializeComponent();
         }
@@ -112,10 +116,12 @@ namespace TaskList
                 nodeElement.Add(new XElement("id", nodeData.id));
                 nodeElement.Add(new XElement("title", nodeData.title));
                 nodeElement.Add(new XElement("parent", nodeData.parent));
+                nodeElement.Add(new XElement("isExpanded", nodeData.isExpanded ? "1" : "0"));
                 nodeElement.Add(new XElement("isRoot", nodeData.isRoot ? "1" : "0"));
                 nodeElement.Add(new XElement("isWindowsRoot", nodeData.isWindowsRoot ? "1" : "0"));
                 nodeElement.Add(new XElement("isWindow", nodeData.isWindow ? "1" : "0"));
                 nodeElement.Add(new XElement("isInactiveWindow", nodeData.isInactiveWindow ? "1" : "0"));
+                nodeElement.Add(new XElement("isPinned", nodeData.isPinned ? "1" : "0"));
                 nodeElement.Add(new XElement("isFolder", nodeData.isFolder ? "1" : "0"));
                 nodeElement.Add(new XElement("isDeletable", nodeData.isDeletable ? "1" : "0"));
                 nodeElement.Add(new XElement("isMoovable", nodeData.isMoovable ? "1" : "0"));
@@ -268,14 +274,19 @@ namespace TaskList
                                             newNodeData.parent = Int32.Parse(attribute.Value);
                                         }
 
+                                        if (attribute.Name.ToString() == "isExpanded")
+                                        {
+                                            newNodeData.isExpanded = attribute.Value == "1";
+                                        }
+
                                         if (attribute.Name.ToString() == "isRoot")
                                         {
                                             newNodeData.isRoot = attribute.Value == "1";
                                         }
 
-                                        if (attribute.Name.ToString() == "isWindow")
+                                        if (attribute.Name.ToString() == "isPinned")
                                         {
-                                            newNodeData.isWindow = attribute.Value == "1";
+                                            newNodeData.isPinned = attribute.Value == "1";
                                         }
 
                                         if (attribute.Name.ToString() == "isInactiveWindow")
@@ -320,11 +331,23 @@ namespace TaskList
 
                                         if (attribute.Name.ToString() == "image")
                                         {
-                                            newNodeData.image = (Bitmap)ImageManager.StringToImage(attribute.Value);
-                                            this.imageList.Images.Add("image" + (this.lastImageIndex), newNodeData.image);
-                                            newNode.ImageIndex = this.lastImageIndex;
-                                            newNode.SelectedImageIndex = this.lastImageIndex;
-                                            lastImageIndex++;
+                                            newNodeData.imageBase = attribute.Value;
+
+                                            if (newNodeData.imageBase != "")
+                                            {
+                                                try
+                                                {
+                                                    newNodeData.image = (Bitmap)ImageManager.StringToImage(newNodeData.imageBase);
+
+                                                    this.imageList.Images.Add("image" + (this.lastImageIndex), newNodeData.image);
+                                                    newNode.ImageIndex = this.lastImageIndex;
+                                                    newNode.SelectedImageIndex = this.lastImageIndex;
+                                                    lastImageIndex++;
+                                                }
+                                                catch (Exception e) {
+                                                    Log.write(e.Message);
+                                                }
+                                            }
                                         }
 
                                         if (attribute.Name.ToString() == "runCommand")
@@ -371,6 +394,16 @@ namespace TaskList
             if (this.rootNode != null)
             {
                 this.restoreNodes(allNodes, this.rootNode);
+
+                // expand nodes
+                foreach (TreeNode node in allNodes) {
+                    NodeDataModel nodeData = (NodeDataModel)node.Tag;
+                    if (nodeData.isExpanded) {
+                        node.Expand();
+
+                    }
+                }
+
                 treeView.Nodes.Add(rootNode);
                 this.lastNodeIndex = lastNodeIndex;
             }
@@ -430,43 +463,148 @@ namespace TaskList
             }
         }
 
-        public void pairInactiveWindowsToNodes() {
+        public void pairInactiveWindowsToNodes(List<WindowData> windowsList = null, bool skipProcessSearch = false) {
             Log.write("pairInactiveWindowsToNodes");
 
-            IntPtr currentAppHandle = this.Handle;
-
-            // windows add 
-            List<IntPtr> windowsList = TaskManager.GetOpenWindows();
-
-            List<WindowProcessPair> windowProcessPair  = TaskManager.FindProcessByWithWindowHandle(windowsList);
+            // map window by window title
+            if (windowsList == null) {
+                windowsList = TaskManager.GetOpenWindows();
+            }
 
             List<TreeNode> toRemoveNodes = new List<TreeNode>();
 
-            foreach (WindowProcessPair window in windowProcessPair)
+            foreach (WindowData windowData in windowsList)
             {
-
                 try
                 {
-                    string processPath = window.process.MainModule.FileName;
+                    windowData.title = TaskManager.getWindowTitle(windowData.handle);
+                    windowData.image = TaskManager.GetSmallWindowIcon(windowData.handle);
+                    windowData.imageBase = ImageManager.ImageToString(windowData.image);
+                    windowData.process = TaskManager.getProcessFromHandle(windowData.handle);
+                    windowData.path = windowData.process != null ? windowData.process.MainModule.FileName : null;
+                }
+                catch (Exception e) {
+                    Log.write(e.Message);
+                }
+            }
 
-                    foreach (TreeNode inactiveNode in allInactiveWindowsNodes)
+            // search by title
+            foreach (WindowData windowData in windowsList)
+            {
+                foreach (TreeNode inactiveNode in allInactiveWindowsNodes)
+                {
+                    NodeDataModel nodeData = (NodeDataModel)inactiveNode.Tag;
+
+                    if (nodeData.handle != IntPtr.Zero)
                     {
-                        NodeDataModel nodeData = (NodeDataModel)inactiveNode.Tag;
-                        if (nodeData.runCommand == processPath && nodeData.handle == IntPtr.Zero)
-                        {
-
-                            nodeData.handle = window.handle;
-                            nodeData.isWindow = true;
-                            nodeData.isInactiveWindow = false;
-                            toRemoveNodes.Add(inactiveNode);
-                            break;
-                        }
+                        continue;
                     }
 
-                } catch (System.ComponentModel.Win32Exception e) {
-                    Log.write(e.Message);
-                } catch (System.InvalidOperationException e) {
-                    Log.write(e.Message);
+                    if (nodeData.title == windowData.title)
+                    {
+
+                        nodeData.handle = windowData.handle;
+                        nodeData.isWindow = true;
+                        nodeData.isInactiveWindow = false;
+                        toRemoveNodes.Add(inactiveNode);
+                        break;
+                    }
+                }
+            }
+
+            //search by process path
+            foreach (WindowData windowData in windowsList)
+            {
+                foreach (TreeNode inactiveNode in allInactiveWindowsNodes)
+                {
+                    NodeDataModel nodeData = (NodeDataModel)inactiveNode.Tag;
+
+                    if (nodeData.handle != IntPtr.Zero)
+                    {
+                        continue;
+                    }
+
+                    if (nodeData.runCommand == windowData.path)
+                    {
+
+                        nodeData.handle = windowData.handle;
+                        nodeData.isWindow = true;
+                        nodeData.isInactiveWindow = false;
+                        toRemoveNodes.Add(inactiveNode);
+                        break;
+                    }
+                }
+            }
+
+            // search by icon
+            foreach (WindowData windowData in windowsList)
+            {
+                foreach (TreeNode inactiveNode in allInactiveWindowsNodes)
+                {
+                    NodeDataModel nodeData = (NodeDataModel)inactiveNode.Tag;
+
+                    if (nodeData.handle != IntPtr.Zero)
+                    {
+                        continue;
+                    }
+
+                    if (nodeData.imageBase != null && nodeData.imageBase != "" && windowData.imageBase != null && windowData.imageBase != "" && nodeData.imageBase == windowData.imageBase)
+                    {
+
+                        nodeData.handle = windowData.handle;
+                        nodeData.isWindow = true;
+                        nodeData.isInactiveWindow = false;
+                        toRemoveNodes.Add(inactiveNode);
+                        break;
+                    }
+                }
+            }
+
+            if (!skipProcessSearch)
+            {
+                TaskManager.FindProcessByWithWindowHandle(windowsList);
+
+                //map window by parent process
+                foreach (WindowData windowData in windowsList)
+                {
+
+                    try
+                    {
+                        if (windowData.process == null)
+                        {
+                            continue;
+                        }
+
+                        string processPath = windowData.process.MainModule.FileName;
+
+                        foreach (TreeNode inactiveNode in allInactiveWindowsNodes)
+                        {
+                            NodeDataModel nodeData = (NodeDataModel)inactiveNode.Tag;
+
+                            if (nodeData.handle != IntPtr.Zero)
+                            {
+                                continue;
+                            }
+
+                            if (nodeData.runCommand == processPath)
+                            {
+                                nodeData.handle = windowData.handle;
+                                nodeData.isWindow = true;
+                                nodeData.isInactiveWindow = false;
+                                toRemoveNodes.Add(inactiveNode);
+                                break;
+                            }
+                        }
+
+                    }
+                    catch (System.ComponentModel.Win32Exception e)
+                    {
+                        Log.write(e.Message);
+                    }
+                    catch (System.InvalidOperationException e)
+                    {
+                        Log.write(e.Message);
+                    }
                 }
             }
 
@@ -480,13 +618,6 @@ namespace TaskList
         {
             Log.write("pairInactiveWindowsToNodes");
 
-            IntPtr currentAppHandle = this.Handle;
-
-            // windows add 
-            List<IntPtr> windowsList = TaskManager.GetOpenWindows();
-
-            List<WindowProcessPair> windowProcessPair = TaskManager.FindProcessByWithWindowHandle(windowsList);
-
             //check if some nodes missing runCommand. runCommand is needed for window identification after reopen this application
             bool setRunCommand = false;
             foreach (TreeNode windowNode in allWindowsNodes)
@@ -494,7 +625,7 @@ namespace TaskList
 
                 NodeDataModel nodeData = (NodeDataModel)windowNode.Tag;
 
-                if (nodeData.runCommand == "")
+                if (nodeData.runCommand == null || nodeData.runCommand == "")
                 {
                     setRunCommand = true;
                     break;
@@ -506,13 +637,22 @@ namespace TaskList
                 return;
             }
 
-            foreach (WindowProcessPair window in windowProcessPair)
+            // windows add 
+            List<WindowData> windowsList = TaskManager.GetOpenWindows();
+
+            TaskManager.FindProcessByWithWindowHandle(windowsList);
+
+            foreach (WindowData window in windowsList)
             {
                 try
                 {
+
+                    if (window.process == null) {
+                        continue;
+                    }
+
                     string processPath = window.process.MainModule.FileName;
 
-                    TreeNode node = null;
                     foreach (TreeNode windowNode in allWindowsNodes)
                     {
 
@@ -585,7 +725,7 @@ namespace TaskList
 
             rootNode.Expand();
 
-            windowsRootNode.ExpandAll();
+            windowsRootNode.Expand();
             treeView.EndUpdate();
 
             autorunToolStripMenuItem.Checked = SystemManager.isAutorunSet();
@@ -631,11 +771,65 @@ namespace TaskList
 
         }
 
-        public void CreateNode(TreeNode node)
+        public TreeNode CreateNode(IntPtr handle, string title = null, TreeNode parent = null, bool isFolder = false, bool isWindow = false, bool isInactiveWindow = false)
         {
+            TreeNode node = new TreeNode();
+            NodeDataModel nodeData = new NodeDataModel();
+            node.Tag = nodeData;
 
-            
+            nodeData.id = ++this.lastNodeIndex;
 
+            if (title != null) {
+                node.Text = title;
+                nodeData.title = title;
+            }
+
+            if (isFolder) {
+                nodeData.isFolder = true;
+                nodeData.imageIndex = this.folderIconIndex;
+                node.ImageIndex = this.folderIconIndex;
+                node.SelectedImageIndex = this.folderIconIndex;
+                allFolderNodes.Add(node);
+            } else 
+            if (isWindow)
+            {
+                nodeData.isWindow = true;
+                allWindowsNodes.Add(node);
+
+                if (handle != IntPtr.Zero) {
+                    nodeData.handle = handle;
+                    nodeData.isCurrentApp = (currentAppHandle == nodeData.handle);                    
+
+                    if (nodeData.handle != null)
+                    {
+                        nodeData.title = TaskManager.getWindowTitle(handle);
+                    }
+
+                    nodeData.image = TaskManager.GetSmallWindowIcon(nodeData.handle);
+                    nodeData.imageBase = ImageManager.ImageToString(nodeData.image);
+                    this.imageList.Images.Add("image" + this.lastImageIndex, (Image)nodeData.image);                    
+                    nodeData.imageIndex = this.lastImageIndex++;
+                    node.ImageIndex = nodeData.imageIndex;
+                    node.SelectedImageIndex = nodeData.imageIndex;
+                }
+           
+            } else
+            if (isInactiveWindow)
+            {
+                nodeData.isInactiveWindow = true;
+                allInactiveWindowsNodes.Add(node);
+            }
+
+            allNodes.Add(node);
+
+            if (parent != null)
+            {
+                NodeDataModel parentData = (NodeDataModel)parent.Tag;
+                nodeData.parent = parentData.id;
+                parent.Nodes.Add(node);
+            }
+
+            return node;
         }
 
         public void getNodes(List<TreeNode> nodes, TreeNode node, int level = 100)
@@ -659,10 +853,48 @@ namespace TaskList
 
                 if (parentData.id == nodeData.parent)
                 {
-                    parent.Nodes.Add(element);
+                    parent.Nodes.Add(element);                    
                     this.restoreNodes(list, element, level - 1);
                 }
             }
+        }
+
+        private void treeView_AfterExpand(object sender, TreeViewEventArgs e)
+        {
+            TreeNode node = e.Node;
+
+            if (node == null)
+            {
+                return;
+            }
+
+            NodeDataModel nodeData = (NodeDataModel)node.Tag;
+
+            if (nodeData == null)
+            {
+                return;
+            }
+
+            nodeData.isExpanded = true;
+        }
+
+        private void treeView_AfterCollapse(object sender, TreeViewEventArgs e)
+        {
+            TreeNode node = e.Node;
+
+            if (node == null)
+            {
+                return;
+            }
+
+            NodeDataModel nodeData = (NodeDataModel)node.Tag;
+
+            if (nodeData == null)
+            {
+                return;
+            }
+
+            nodeData.isExpanded = false;
         }
 
         /* UPDATE TREEVIEW */
@@ -677,21 +909,20 @@ namespace TaskList
         {
             Log.write("updatTree");
 
-            IntPtr currentAppHandle = this.Handle;
-
             List<TreeNode> toRemoveNodes = new List<TreeNode>();
 
             // windows add 
-            List<IntPtr> windowsList = TaskManager.GetOpenWindows();
+            List<WindowData> windowsList = TaskManager.GetOpenWindows();
 
-            NodeDataModel windowsNodeData = (NodeDataModel)windowsRootNode.Tag;
 
-            //List<WindowProcessPair> windowProcessPair  = TaskManager.FindProcessByWithWindowHandle(windowsList);
+            if (this.allInactiveWindowsNodes.Count > 0) {
+                this.pairInactiveWindowsToNodes(windowsList, true);
+            }
 
-            foreach (IntPtr handle in windowsList)
+            foreach (WindowData window in windowsList)
             {
 
-                if (currentAppHandle == handle) {
+                if (currentAppHandle == window.handle) {
                     continue;
                 }
 
@@ -700,13 +931,13 @@ namespace TaskList
                 {
                     var oldNodeData = (NodeDataModel)oldNode.Tag;
 
-                    if (oldNodeData.handle == handle)
+                    if (oldNodeData.handle == window.handle)
                     {
 
                         if (!oldNodeData.isRenamed)
                         {
-                            string windowTitle = TaskManager.getWindowTitle(handle);
-                            if (windowTitle != oldNode.Text)
+                            string windowTitle = TaskManager.getWindowTitle(window.handle);
+                            if (windowTitle != "" && windowTitle != oldNode.Text)
                             {
                                 oldNode.Text = windowTitle;//update windows title
                             }
@@ -722,25 +953,19 @@ namespace TaskList
                     continue;
                 }
 
-                // reate new node 
-                var nodeData = new NodeDataModel();
-                nodeData.id = ++this.lastNodeIndex;
-                nodeData.parent = windowsNodeData.id;
-                nodeData.title = TaskManager.getWindowTitle(handle);
-                nodeData.isWindow = true;
-                nodeData.process = null;
-                nodeData.handle = handle;
-                nodeData.isCurrentApp = currentAppHandle == nodeData.handle;
-                nodeData.image = TaskManager.GetSmallWindowIcon(nodeData.handle);
-                nodeData.runCommand = "";
+                //skip current app
+                if (window.handle == this.currentAppHandle) {
+                    continue;
+                }
 
-                this.imageList.Images.Add("image" + this.lastImageIndex, (Image)nodeData.image);
-                var node = windowsRootNode.Nodes.Add(nodeData.title, nodeData.title, this.lastImageIndex, this.lastImageIndex++);
-                node.Tag = nodeData;
-
-                this.allNodes.Add(node);
-                this.allWindowsNodes.Add(node);
-
+                this.CreateNode(
+                    window.handle,
+                    "Window",
+                    windowsRootNode, 
+                    false,
+                    true,
+                    false
+               );
             }
 
             // find old nodes
@@ -749,9 +974,9 @@ namespace TaskList
 
                 NodeDataModel nodeData = (NodeDataModel)oldNode.Tag;
                 bool exists = false;
-                foreach (IntPtr handle in windowsList)
+                foreach (WindowData window in windowsList)
                 {
-                    if (nodeData.handle == handle)
+                    if (nodeData.handle == window.handle)
                     {
                         exists = true;
                         break;
@@ -767,7 +992,19 @@ namespace TaskList
             // remove old nodes
             foreach (TreeNode oldNode in toRemoveNodes)
             {
-                RemoveNode(oldNode);
+                NodeDataModel oldNodeData =  (NodeDataModel)oldNode.Tag;
+                if (oldNodeData.isPinned)
+                {
+                    oldNodeData.isWindow = false;
+                    oldNodeData.isInactiveWindow = true;
+                    oldNodeData.handle = IntPtr.Zero;
+
+                    this.allWindowsNodes.Remove(oldNode);
+                    this.allInactiveWindowsNodes.Add(oldNode);
+                }
+                else {
+                    this.RemoveNode(oldNode);
+                }
             }
 
 
@@ -946,8 +1183,7 @@ namespace TaskList
                     draggedNode.Remove();
                     int targetNodePosition = targetNode.Parent.Nodes.IndexOf(targetNode);
                     targetNode.Parent.Nodes.Insert(targetNodePosition, draggedNode);
-
-                    
+                    draggedNodeData.parent = ((NodeDataModel)targetNode.Parent.Tag).id;
                 }
 
                 if (addNodeIn)
@@ -964,6 +1200,7 @@ namespace TaskList
                     draggedNode.Remove();
                     int targetNodePosition = targetNode.Parent.Nodes.IndexOf(targetNode);
                     targetNode.Parent.Nodes.Insert(targetNodePosition + 1, draggedNode);
+                    draggedNodeData.parent = ((NodeDataModel)targetNode.Parent.Tag).id;
                 }
             }
 
@@ -972,6 +1209,29 @@ namespace TaskList
         }
 
         /* CONTEXT MENU EVENTS */
+
+        private void contextMenuStrip_Opening(object sender, CancelEventArgs e)
+        {
+            TreeNode node = treeView.SelectedNode;
+
+            if (node == null) {
+                return;
+            }
+
+            NodeDataModel nodeData = (NodeDataModel)node.Tag;
+
+            pinToolStripMenuItem.Checked = nodeData.isPinned;
+
+            if (pinToolStripMenuItem.Checked)
+            {
+                pinToolStripMenuItem.Text = "Unpin";
+            }
+            else {
+                pinToolStripMenuItem.Text = "Pin";
+            }
+
+
+        }
 
         private void folderToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -984,20 +1244,16 @@ namespace TaskList
 
 
             TreeNode parentNode = treeView.SelectedNode;
+                        
+            this.CreateNode(
+                IntPtr.Zero,
+                "Folder",
+                parentNode,
+                true,
+                false,
+                false
+            );
 
-            NodeDataModel parentNodeData = (NodeDataModel)parentNode.Tag;
-
-            TreeNode node = parentNode.Nodes.Add("Folder", "Folder", this.folderIconIndex, this.folderIconIndex);
-
-            NodeDataModel nodeData = new NodeDataModel();
-            nodeData.id = ++this.lastNodeIndex;
-            nodeData.title = "Folder";
-            nodeData.parent = parentNodeData.id;
-            nodeData.isFolder = true;
-            node.Tag = nodeData;
-            
-            this.allNodes.Add(node);
-            this.allFolderNodes.Add(node);
             treeView.SelectedNode.Expand();
         }
 
@@ -1025,6 +1281,7 @@ namespace TaskList
                 return;
             }
 
+            treeView.LabelEdit = true;
             treeView.SelectedNode.BeginEdit();
         }
 
@@ -1044,8 +1301,10 @@ namespace TaskList
                 return;
             }
 
+            nodeData.title = e.Label;
             nodeData.isRenamed = true;
             e.Node.EndEdit(true);
+            treeView.LabelEdit = false;
         }
 
         private void deleteToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1062,6 +1321,21 @@ namespace TaskList
 
         }
 
+        private void pinToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Log.write("pinToolStripMenuItem_Click");
+
+            if(treeView.SelectedNode == null)
+            {
+                return;
+            }
+
+            NodeDataModel nodeData = (NodeDataModel)treeView.SelectedNode.Tag;
+            if (nodeData.isWindow || nodeData.isInactiveWindow) {
+                nodeData.isPinned = !nodeData.isPinned;
+            }
+        }
+        
         /* MENU EVENTS */
 
         private void lockToolStripMenuItem_Click(object sender, EventArgs e)

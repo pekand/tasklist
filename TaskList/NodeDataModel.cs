@@ -13,6 +13,7 @@ namespace TaskList
         public int id = 0;
         public int parent = -1;
         public string title = null;
+        public bool isExpanded = false;
         public bool isRoot = false;
         public bool isWindowsRoot = false;
         public bool isWindow = false;

@@ -39,7 +39,7 @@ namespace TaskList
             }
         }
 
-        public static string ImageToString(Bitmap image)
+        public static string ImageToString(Image image)
         {
             try
             {

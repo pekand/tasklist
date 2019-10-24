@@ -36,6 +36,7 @@
             this.renameToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.deleteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.closeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.pinToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.closeApplicationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -51,11 +52,11 @@
             this.autorunToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.fontToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.rememberToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.showInTaskbarToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.showDesktopToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tableLayoutPanel = new System.Windows.Forms.TableLayoutPanel();
-            this.fontDialog = new System.Windows.Forms.FontDialog();
-            this.showInTaskbarToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.treeView = new System.Windows.Forms.TreeView();
+            this.fontDialog = new System.Windows.Forms.FontDialog();
             this.contextMenuStrip.SuspendLayout();
             this.menuStrip.SuspendLayout();
             this.tableLayoutPanel.SuspendLayout();
@@ -63,7 +64,7 @@
             // 
             // updateTimer
             // 
-            this.updateTimer.Interval = 200;
+            this.updateTimer.Interval = 300;
             this.updateTimer.Tick += new System.EventHandler(this.update_Tick);
             // 
             // contextMenuStrip
@@ -72,9 +73,11 @@
             this.folderToolStripMenuItem,
             this.renameToolStripMenuItem,
             this.deleteToolStripMenuItem,
-            this.closeToolStripMenuItem});
+            this.closeToolStripMenuItem,
+            this.pinToolStripMenuItem});
             this.contextMenuStrip.Name = "contextMenuStrip1";
-            this.contextMenuStrip.Size = new System.Drawing.Size(118, 92);
+            this.contextMenuStrip.Size = new System.Drawing.Size(118, 114);
+            this.contextMenuStrip.Opening += new System.ComponentModel.CancelEventHandler(this.contextMenuStrip_Opening);
             // 
             // folderToolStripMenuItem
             // 
@@ -103,6 +106,13 @@
             this.closeToolStripMenuItem.Size = new System.Drawing.Size(117, 22);
             this.closeToolStripMenuItem.Text = "Close";
             this.closeToolStripMenuItem.Click += new System.EventHandler(this.closeToolStripMenuItem_Click);
+            // 
+            // pinToolStripMenuItem
+            // 
+            this.pinToolStripMenuItem.Name = "pinToolStripMenuItem";
+            this.pinToolStripMenuItem.Size = new System.Drawing.Size(117, 22);
+            this.pinToolStripMenuItem.Text = "Pin";
+            this.pinToolStripMenuItem.Click += new System.EventHandler(this.pinToolStripMenuItem_Click);
             // 
             // menuStrip
             // 
@@ -202,30 +212,37 @@
             // alwaysOnTopToolStripMenuItem
             // 
             this.alwaysOnTopToolStripMenuItem.Name = "alwaysOnTopToolStripMenuItem";
-            this.alwaysOnTopToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.alwaysOnTopToolStripMenuItem.Size = new System.Drawing.Size(157, 22);
             this.alwaysOnTopToolStripMenuItem.Text = "Always on top";
             this.alwaysOnTopToolStripMenuItem.Click += new System.EventHandler(this.alwaysOnTopToolStripMenuItem_Click);
             // 
             // autorunToolStripMenuItem
             // 
             this.autorunToolStripMenuItem.Name = "autorunToolStripMenuItem";
-            this.autorunToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.autorunToolStripMenuItem.Size = new System.Drawing.Size(157, 22);
             this.autorunToolStripMenuItem.Text = "Autorun";
             this.autorunToolStripMenuItem.Click += new System.EventHandler(this.autorunToolStripMenuItem_Click);
             // 
             // fontToolStripMenuItem
             // 
             this.fontToolStripMenuItem.Name = "fontToolStripMenuItem";
-            this.fontToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.fontToolStripMenuItem.Size = new System.Drawing.Size(157, 22);
             this.fontToolStripMenuItem.Text = "Font";
             this.fontToolStripMenuItem.Click += new System.EventHandler(this.fontToolStripMenuItem_Click);
             // 
             // rememberToolStripMenuItem
             // 
             this.rememberToolStripMenuItem.Name = "rememberToolStripMenuItem";
-            this.rememberToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.rememberToolStripMenuItem.Size = new System.Drawing.Size(157, 22);
             this.rememberToolStripMenuItem.Text = "Remember";
             this.rememberToolStripMenuItem.Click += new System.EventHandler(this.rememberToolStripMenuItem_Click);
+            // 
+            // showInTaskbarToolStripMenuItem
+            // 
+            this.showInTaskbarToolStripMenuItem.Name = "showInTaskbarToolStripMenuItem";
+            this.showInTaskbarToolStripMenuItem.Size = new System.Drawing.Size(157, 22);
+            this.showInTaskbarToolStripMenuItem.Text = "Show in taskbar";
+            this.showInTaskbarToolStripMenuItem.Click += new System.EventHandler(this.showInTaskbarToolStripMenuItem_Click);
             // 
             // showDesktopToolStripMenuItem
             // 
@@ -248,13 +265,6 @@
             this.tableLayoutPanel.Size = new System.Drawing.Size(804, 1043);
             this.tableLayoutPanel.TabIndex = 6;
             // 
-            // showInTaskbarToolStripMenuItem
-            // 
-            this.showInTaskbarToolStripMenuItem.Name = "showInTaskbarToolStripMenuItem";
-            this.showInTaskbarToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.showInTaskbarToolStripMenuItem.Text = "Show in taskbar";
-            this.showInTaskbarToolStripMenuItem.Click += new System.EventHandler(this.showInTaskbarToolStripMenuItem_Click);
-            // 
             // treeView
             // 
             this.treeView.AllowDrop = true;
@@ -262,12 +272,13 @@
             this.treeView.Cursor = System.Windows.Forms.Cursors.Arrow;
             this.treeView.Dock = System.Windows.Forms.DockStyle.Fill;
             this.treeView.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.treeView.LabelEdit = true;
             this.treeView.Location = new System.Drawing.Point(3, 3);
             this.treeView.Name = "treeView";
             this.treeView.Size = new System.Drawing.Size(798, 1037);
             this.treeView.TabIndex = 2;
             this.treeView.AfterLabelEdit += new System.Windows.Forms.NodeLabelEditEventHandler(this.treeView_AfterLabelEdit);
+            this.treeView.AfterCollapse += new System.Windows.Forms.TreeViewEventHandler(this.treeView_AfterCollapse);
+            this.treeView.AfterExpand += new System.Windows.Forms.TreeViewEventHandler(this.treeView_AfterExpand);
             this.treeView.ItemDrag += new System.Windows.Forms.ItemDragEventHandler(this.treeView_ItemDrag);
             this.treeView.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.treeView_NodeMouseClick);
             this.treeView.DragDrop += new System.Windows.Forms.DragEventHandler(this.treeView_DragDrop);
@@ -330,6 +341,7 @@
         private System.Windows.Forms.FontDialog fontDialog;
         private System.Windows.Forms.ToolStripMenuItem rememberToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem showInTaskbarToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem pinToolStripMenuItem;
     }
 }
 

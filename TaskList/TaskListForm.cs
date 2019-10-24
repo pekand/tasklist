@@ -506,6 +506,7 @@ namespace TaskList
                         nodeData.handle = windowData.handle;
                         nodeData.isWindow = true;
                         nodeData.isInactiveWindow = false;
+                        nodeData.runCommand = windowData.path;
                         toRemoveNodes.Add(inactiveNode);
                         break;
                     }

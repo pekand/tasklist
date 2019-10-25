@@ -13,6 +13,7 @@ namespace TaskList
         public int id = 0;
         public int parent = -1;
         public string title = null;
+        public string windowTitle = null;
         public bool isExpanded = false;
         public bool isRoot = false;
         public bool isWindowsRoot = false;
@@ -21,6 +22,7 @@ namespace TaskList
         public bool isRunning = false;
         public bool isPinned = false;
         public bool isFolder = false;
+        public bool isNote = false;
         public bool isDeletable = false;
         public bool isMoovable = true;
         public bool isHidden = false;

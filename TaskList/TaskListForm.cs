@@ -28,6 +28,7 @@ namespace TaskList
         int lastImageIndex = 0;
         int defaultIconIndex = 0;
         int folderIconIndex = 0;
+        int noteIconIndex = 0;
 
         IntPtr currentAppHandle = IntPtr.Zero;
 
@@ -115,6 +116,7 @@ namespace TaskList
 
                 nodeElement.Add(new XElement("id", nodeData.id));
                 nodeElement.Add(new XElement("title", nodeData.title));
+                nodeElement.Add(new XElement("windowTitle", nodeData.windowTitle));
                 nodeElement.Add(new XElement("parent", nodeData.parent));
                 nodeElement.Add(new XElement("isExpanded", nodeData.isExpanded ? "1" : "0"));
                 nodeElement.Add(new XElement("isRoot", nodeData.isRoot ? "1" : "0"));
@@ -123,6 +125,7 @@ namespace TaskList
                 nodeElement.Add(new XElement("isInactiveWindow", nodeData.isInactiveWindow ? "1" : "0"));
                 nodeElement.Add(new XElement("isPinned", nodeData.isPinned ? "1" : "0"));
                 nodeElement.Add(new XElement("isFolder", nodeData.isFolder ? "1" : "0"));
+                nodeElement.Add(new XElement("isNote", nodeData.isNote ? "1" : "0"));
                 nodeElement.Add(new XElement("isDeletable", nodeData.isDeletable ? "1" : "0"));
                 nodeElement.Add(new XElement("isMoovable", nodeData.isMoovable ? "1" : "0"));
                 nodeElement.Add(new XElement("isHidden", nodeData.isHidden ? "1" : "0"));
@@ -265,8 +268,12 @@ namespace TaskList
 
                                         if (attribute.Name.ToString() == "title")
                                         {
-                                            newNode.Text = attribute.Value;
-                                            newNodeData.title = attribute.Value;
+                                              newNodeData.title = attribute.Value;
+                                        }
+
+                                        if (attribute.Name.ToString() == "windowTitle")
+                                        {
+                                            newNodeData.windowTitle = attribute.Value;
                                         }
 
                                         if (attribute.Name.ToString() == "parent")
@@ -302,6 +309,11 @@ namespace TaskList
                                         if (attribute.Name.ToString() == "isFolder")
                                         {
                                             newNodeData.isFolder = attribute.Value == "1";
+                                        }
+
+                                        if (attribute.Name.ToString() == "isNote")
+                                        {
+                                            newNodeData.isNote = attribute.Value == "1";
                                         }
 
                                         if (attribute.Name.ToString() == "isDeletable")
@@ -370,6 +382,25 @@ namespace TaskList
                                     {
                                         newNode.ImageIndex = this.folderIconIndex;
                                         newNode.SelectedImageIndex = this.folderIconIndex;
+                                        allFolderNodes.Add(newNode);
+                                    }
+
+                                    if (newNodeData.isWindow)
+                                    {
+                                        if (newNodeData.isRenamed) {
+                                            newNode.Text = newNodeData.title;
+                                        } else {
+                                            newNode.Text = newNodeData.windowTitle;
+                                        }
+                                        
+                                    } else {
+                                        newNode.Text = newNodeData.title;
+                                    }
+
+                                    if (newNodeData.isNote)
+                                    {
+                                        newNode.ImageIndex = this.noteIconIndex;
+                                        newNode.SelectedImageIndex = this.noteIconIndex;
                                         allFolderNodes.Add(newNode);
                                     }
 
@@ -692,6 +723,11 @@ namespace TaskList
             this.folderIconIndex = this.lastImageIndex++;
             this.imageList.Images.Add("image" + this.folderIconIndex, (Image)folderIcon);
 
+            Bitmap noteIcon = new Bitmap(System.Reflection.Assembly.GetEntryAssembly().GetManifestResourceStream("TaskList.Resources.note.ico"));
+            this.noteIconIndex = this.lastImageIndex++;
+            this.imageList.Images.Add("image" + this.noteIconIndex, (Image)noteIcon);
+
+
             this.restoreFormSettings();
 
             this.pairInactiveWindowsToNodes();
@@ -772,7 +808,7 @@ namespace TaskList
 
         }
 
-        public TreeNode CreateNode(IntPtr handle, string title = null, TreeNode parent = null, bool isFolder = false, bool isWindow = false, bool isInactiveWindow = false)
+        public TreeNode CreateNode(IntPtr handle, string title = null, TreeNode parent = null, bool isFolder = false, bool isWindow = false, bool isInactiveWindow = false, bool isNote = false)
         {
             TreeNode node = new TreeNode();
             NodeDataModel nodeData = new NodeDataModel();
@@ -791,7 +827,16 @@ namespace TaskList
                 node.ImageIndex = this.folderIconIndex;
                 node.SelectedImageIndex = this.folderIconIndex;
                 allFolderNodes.Add(node);
-            } else 
+            } else
+            if (isNote)
+            {
+                nodeData.isNote = true;
+                nodeData.imageIndex = this.noteIconIndex;
+                node.ImageIndex = this.noteIconIndex;
+                node.SelectedImageIndex = this.noteIconIndex;
+                allFolderNodes.Add(node);
+            }
+            else
             if (isWindow)
             {
                 nodeData.isWindow = true;
@@ -935,14 +980,18 @@ namespace TaskList
                     if (oldNodeData.handle == window.handle)
                     {
 
-                        if (!oldNodeData.isRenamed)
+                        string windowTitle = TaskManager.getWindowTitle(window.handle);
+                        if (windowTitle != "" && windowTitle != oldNodeData.windowTitle)
                         {
-                            string windowTitle = TaskManager.getWindowTitle(window.handle);
-                            if (windowTitle != "" && windowTitle != oldNode.Text)
+                            if (!oldNodeData.isRenamed)
                             {
-                                oldNode.Text = windowTitle;//update windows title
+                                oldNodeData.title = windowTitle;
+                                oldNode.Text = windowTitle;
                             }
+
+                            oldNodeData.windowTitle = windowTitle;
                         }
+                        
 
                         exists = true;
                         break;
@@ -965,6 +1014,7 @@ namespace TaskList
                     windowsRootNode, 
                     false,
                     true,
+                    false,
                     false
                );
             }
@@ -1252,7 +1302,33 @@ namespace TaskList
                 parentNode,
                 true,
                 false,
+                false,
                 false
+            );
+
+            treeView.SelectedNode.Expand();
+        }
+
+        private void noteToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Log.write("noteToolStripMenuItem_Click");
+
+            if (treeView.SelectedNode == null)
+            {
+                return;
+            }
+
+
+            TreeNode parentNode = treeView.SelectedNode;
+
+            this.CreateNode(
+                IntPtr.Zero,
+                "Note",
+                parentNode,
+                false,
+                false,
+                false,
+                true
             );
 
             treeView.SelectedNode.Expand();
@@ -1302,10 +1378,24 @@ namespace TaskList
                 return;
             }
 
-            nodeData.title = e.Label;
-            nodeData.isRenamed = true;
+
+            if (nodeData.isWindow) {
+                if (e.Label != "" && e.Label != nodeData.windowTitle) {
+                    nodeData.title = e.Label;
+                    nodeData.isRenamed = true;
+                } else {
+                    nodeData.title = nodeData.windowTitle;
+                    nodeData.isRenamed = false;
+                }
+            } else {
+                nodeData.title = e.Label;
+                nodeData.isRenamed = false;
+            }
+
+            e.Node.Text = nodeData.title;
             e.Node.EndEdit(true);
             treeView.LabelEdit = false;
+
         }
 
         private void deleteToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1470,5 +1560,7 @@ namespace TaskList
         {
             SystemManager.soundLevel(100);
         }
+
+        
     }
 }

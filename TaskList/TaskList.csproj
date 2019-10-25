@@ -133,6 +133,7 @@
     <EmbeddedResource Include="Resources\TaskList.ico" />
     <EmbeddedResource Include="Resources\folder.ico" />
     <EmbeddedResource Include="Resources\note.ico" />
+    <EmbeddedResource Include="Resources\systemfolder.ico" />
     <Content Include="TaskList.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

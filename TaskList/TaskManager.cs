@@ -355,7 +355,51 @@ namespace TaskList
         }
         /********************************************************************/
 
+        [DllImport("user32.dll", SetLastError = true)]
+        static extern IntPtr FindWindowEx(IntPtr hWndParent, IntPtr hWndChildAfter, string lpClassName, string lpWindowName);
 
 
+
+        [DllImport("user32.dll", SetLastError = true)]
+        static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
+
+
+        static IntPtr GetSystemTrayHandle()
+        {
+            IntPtr hWndTray = FindWindow("Shell_TrayWnd", null);
+            if (hWndTray != IntPtr.Zero)
+            {
+                hWndTray = FindWindowEx(hWndTray, IntPtr.Zero, "TrayNotifyWnd", null);
+                if (hWndTray != IntPtr.Zero)
+                {
+                    hWndTray = FindWindowEx(hWndTray, IntPtr.Zero, "SysPager", null);
+                    if (hWndTray != IntPtr.Zero)
+                    {
+                        hWndTray = FindWindowEx(hWndTray, IntPtr.Zero, "ToolbarWindow32", null);
+                        return hWndTray;
+                    }
+                }
+            }
+
+            return IntPtr.Zero;
+        }
+
+        public static List<WindowData> getSystemTryWindows() {
+
+            List<WindowData> windows = new List<WindowData>();
+
+            IntPtr systemTrayHandle = GetSystemTrayHandle();
+            System.Diagnostics.Process[] processes = System.Diagnostics.Process.GetProcesses();
+            foreach (System.Diagnostics.Process process in processes)
+            {
+                if (process.MainWindowHandle == systemTrayHandle)
+                {
+                    WindowData data = new WindowData(IntPtr.Zero,process.ProcessName,null,process);
+                    windows.Add(data);
+                }
+            }
+
+            return windows;
+        }
     }
 }

@@ -33,6 +33,7 @@
             this.updateTimer = new System.Windows.Forms.Timer(this.components);
             this.contextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.folderToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.noteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.renameToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.deleteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.closeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -47,23 +48,22 @@
             this.hibernateToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.restartToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.shutdownToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.optionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.alwaysOnTopToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.autorunToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.fontToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.rememberToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.showInTaskbarToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.volumeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.muteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem3 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem4 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem5 = new System.Windows.Forms.ToolStripMenuItem();
+            this.optionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.alwaysOnTopToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.autorunToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.fontToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.rememberToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.showInTaskbarToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.showDesktopToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tableLayoutPanel = new System.Windows.Forms.TableLayoutPanel();
             this.treeView = new System.Windows.Forms.TreeView();
             this.fontDialog = new System.Windows.Forms.FontDialog();
-            this.noteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.contextMenuStrip.SuspendLayout();
             this.menuStrip.SuspendLayout();
             this.tableLayoutPanel.SuspendLayout();
@@ -84,41 +84,48 @@
             this.closeToolStripMenuItem,
             this.pinToolStripMenuItem});
             this.contextMenuStrip.Name = "contextMenuStrip1";
-            this.contextMenuStrip.Size = new System.Drawing.Size(181, 158);
+            this.contextMenuStrip.Size = new System.Drawing.Size(118, 136);
             this.contextMenuStrip.Opening += new System.ComponentModel.CancelEventHandler(this.contextMenuStrip_Opening);
             // 
             // folderToolStripMenuItem
             // 
             this.folderToolStripMenuItem.Name = "folderToolStripMenuItem";
-            this.folderToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.folderToolStripMenuItem.Size = new System.Drawing.Size(117, 22);
             this.folderToolStripMenuItem.Text = "Folder";
             this.folderToolStripMenuItem.Click += new System.EventHandler(this.folderToolStripMenuItem_Click);
+            // 
+            // noteToolStripMenuItem
+            // 
+            this.noteToolStripMenuItem.Name = "noteToolStripMenuItem";
+            this.noteToolStripMenuItem.Size = new System.Drawing.Size(117, 22);
+            this.noteToolStripMenuItem.Text = "Note";
+            this.noteToolStripMenuItem.Click += new System.EventHandler(this.noteToolStripMenuItem_Click);
             // 
             // renameToolStripMenuItem
             // 
             this.renameToolStripMenuItem.Name = "renameToolStripMenuItem";
-            this.renameToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.renameToolStripMenuItem.Size = new System.Drawing.Size(117, 22);
             this.renameToolStripMenuItem.Text = "Rename";
             this.renameToolStripMenuItem.Click += new System.EventHandler(this.renameToolStripMenuItem_Click);
             // 
             // deleteToolStripMenuItem
             // 
             this.deleteToolStripMenuItem.Name = "deleteToolStripMenuItem";
-            this.deleteToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.deleteToolStripMenuItem.Size = new System.Drawing.Size(117, 22);
             this.deleteToolStripMenuItem.Text = "Delete";
             this.deleteToolStripMenuItem.Click += new System.EventHandler(this.deleteToolStripMenuItem_Click);
             // 
             // closeToolStripMenuItem
             // 
             this.closeToolStripMenuItem.Name = "closeToolStripMenuItem";
-            this.closeToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.closeToolStripMenuItem.Size = new System.Drawing.Size(117, 22);
             this.closeToolStripMenuItem.Text = "Close";
             this.closeToolStripMenuItem.Click += new System.EventHandler(this.closeToolStripMenuItem_Click);
             // 
             // pinToolStripMenuItem
             // 
             this.pinToolStripMenuItem.Name = "pinToolStripMenuItem";
-            this.pinToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.pinToolStripMenuItem.Size = new System.Drawing.Size(117, 22);
             this.pinToolStripMenuItem.Text = "Pin";
             this.pinToolStripMenuItem.Click += new System.EventHandler(this.pinToolStripMenuItem_Click);
             // 
@@ -206,53 +213,6 @@
             this.shutdownToolStripMenuItem.Text = "Shutdown";
             this.shutdownToolStripMenuItem.Click += new System.EventHandler(this.shutdownToolStripMenuItem_Click);
             // 
-            // optionsToolStripMenuItem
-            // 
-            this.optionsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.alwaysOnTopToolStripMenuItem,
-            this.autorunToolStripMenuItem,
-            this.fontToolStripMenuItem,
-            this.rememberToolStripMenuItem,
-            this.showInTaskbarToolStripMenuItem});
-            this.optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
-            this.optionsToolStripMenuItem.Size = new System.Drawing.Size(61, 20);
-            this.optionsToolStripMenuItem.Text = "Options";
-            // 
-            // alwaysOnTopToolStripMenuItem
-            // 
-            this.alwaysOnTopToolStripMenuItem.Name = "alwaysOnTopToolStripMenuItem";
-            this.alwaysOnTopToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.alwaysOnTopToolStripMenuItem.Text = "Always on top";
-            this.alwaysOnTopToolStripMenuItem.Click += new System.EventHandler(this.alwaysOnTopToolStripMenuItem_Click);
-            // 
-            // autorunToolStripMenuItem
-            // 
-            this.autorunToolStripMenuItem.Name = "autorunToolStripMenuItem";
-            this.autorunToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.autorunToolStripMenuItem.Text = "Autorun";
-            this.autorunToolStripMenuItem.Click += new System.EventHandler(this.autorunToolStripMenuItem_Click);
-            // 
-            // fontToolStripMenuItem
-            // 
-            this.fontToolStripMenuItem.Name = "fontToolStripMenuItem";
-            this.fontToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.fontToolStripMenuItem.Text = "Font";
-            this.fontToolStripMenuItem.Click += new System.EventHandler(this.fontToolStripMenuItem_Click);
-            // 
-            // rememberToolStripMenuItem
-            // 
-            this.rememberToolStripMenuItem.Name = "rememberToolStripMenuItem";
-            this.rememberToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.rememberToolStripMenuItem.Text = "Remember";
-            this.rememberToolStripMenuItem.Click += new System.EventHandler(this.rememberToolStripMenuItem_Click);
-            // 
-            // showInTaskbarToolStripMenuItem
-            // 
-            this.showInTaskbarToolStripMenuItem.Name = "showInTaskbarToolStripMenuItem";
-            this.showInTaskbarToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.showInTaskbarToolStripMenuItem.Text = "Show in taskbar";
-            this.showInTaskbarToolStripMenuItem.Click += new System.EventHandler(this.showInTaskbarToolStripMenuItem_Click);
-            // 
             // volumeToolStripMenuItem
             // 
             this.volumeToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -269,7 +229,7 @@
             // 
             this.muteToolStripMenuItem.Name = "muteToolStripMenuItem";
             this.muteToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.muteToolStripMenuItem.Text = "Mute";
+            this.muteToolStripMenuItem.Text = "Mute / Unmute";
             this.muteToolStripMenuItem.Click += new System.EventHandler(this.muteToolStripMenuItem_Click);
             // 
             // toolStripMenuItem2
@@ -299,6 +259,53 @@
             this.toolStripMenuItem5.Size = new System.Drawing.Size(180, 22);
             this.toolStripMenuItem5.Text = "100%";
             this.toolStripMenuItem5.Click += new System.EventHandler(this.toolStripMenuItem5_Click);
+            // 
+            // optionsToolStripMenuItem
+            // 
+            this.optionsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.alwaysOnTopToolStripMenuItem,
+            this.autorunToolStripMenuItem,
+            this.fontToolStripMenuItem,
+            this.rememberToolStripMenuItem,
+            this.showInTaskbarToolStripMenuItem});
+            this.optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
+            this.optionsToolStripMenuItem.Size = new System.Drawing.Size(61, 20);
+            this.optionsToolStripMenuItem.Text = "Options";
+            // 
+            // alwaysOnTopToolStripMenuItem
+            // 
+            this.alwaysOnTopToolStripMenuItem.Name = "alwaysOnTopToolStripMenuItem";
+            this.alwaysOnTopToolStripMenuItem.Size = new System.Drawing.Size(157, 22);
+            this.alwaysOnTopToolStripMenuItem.Text = "Always on top";
+            this.alwaysOnTopToolStripMenuItem.Click += new System.EventHandler(this.alwaysOnTopToolStripMenuItem_Click);
+            // 
+            // autorunToolStripMenuItem
+            // 
+            this.autorunToolStripMenuItem.Name = "autorunToolStripMenuItem";
+            this.autorunToolStripMenuItem.Size = new System.Drawing.Size(157, 22);
+            this.autorunToolStripMenuItem.Text = "Autorun";
+            this.autorunToolStripMenuItem.Click += new System.EventHandler(this.autorunToolStripMenuItem_Click);
+            // 
+            // fontToolStripMenuItem
+            // 
+            this.fontToolStripMenuItem.Name = "fontToolStripMenuItem";
+            this.fontToolStripMenuItem.Size = new System.Drawing.Size(157, 22);
+            this.fontToolStripMenuItem.Text = "Font";
+            this.fontToolStripMenuItem.Click += new System.EventHandler(this.fontToolStripMenuItem_Click);
+            // 
+            // rememberToolStripMenuItem
+            // 
+            this.rememberToolStripMenuItem.Name = "rememberToolStripMenuItem";
+            this.rememberToolStripMenuItem.Size = new System.Drawing.Size(157, 22);
+            this.rememberToolStripMenuItem.Text = "Remember";
+            this.rememberToolStripMenuItem.Click += new System.EventHandler(this.rememberToolStripMenuItem_Click);
+            // 
+            // showInTaskbarToolStripMenuItem
+            // 
+            this.showInTaskbarToolStripMenuItem.Name = "showInTaskbarToolStripMenuItem";
+            this.showInTaskbarToolStripMenuItem.Size = new System.Drawing.Size(157, 22);
+            this.showInTaskbarToolStripMenuItem.Text = "Show in taskbar";
+            this.showInTaskbarToolStripMenuItem.Click += new System.EventHandler(this.showInTaskbarToolStripMenuItem_Click);
             // 
             // showDesktopToolStripMenuItem
             // 
@@ -337,18 +344,12 @@
             this.treeView.AfterExpand += new System.Windows.Forms.TreeViewEventHandler(this.treeView_AfterExpand);
             this.treeView.ItemDrag += new System.Windows.Forms.ItemDragEventHandler(this.treeView_ItemDrag);
             this.treeView.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.treeView_NodeMouseClick);
+            this.treeView.NodeMouseDoubleClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.treeView_NodeMouseDoubleClick);
             this.treeView.DragDrop += new System.Windows.Forms.DragEventHandler(this.treeView_DragDrop);
             this.treeView.DragEnter += new System.Windows.Forms.DragEventHandler(this.treeView_DragEnter);
             this.treeView.DragOver += new System.Windows.Forms.DragEventHandler(this.treeView_DragOver);
             this.treeView.MouseClick += new System.Windows.Forms.MouseEventHandler(this.treeView_MouseClick);
             this.treeView.MouseUp += new System.Windows.Forms.MouseEventHandler(this.treeView_MouseUp);
-            // 
-            // noteToolStripMenuItem
-            // 
-            this.noteToolStripMenuItem.Name = "noteToolStripMenuItem";
-            this.noteToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.noteToolStripMenuItem.Text = "Note";
-            this.noteToolStripMenuItem.Click += new System.EventHandler(this.noteToolStripMenuItem_Click);
             // 
             // TaskListForm
             // 

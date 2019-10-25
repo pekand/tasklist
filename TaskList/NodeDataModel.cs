@@ -28,10 +28,11 @@ namespace TaskList
         public bool isHidden = false;
         public bool isRenamed = false;
         public bool isCurrentApp = false;
+        public bool isLink = false;
         public Process process = null;
         public IntPtr handle = IntPtr.Zero;
         public int imageIndex = -1;
-        public Bitmap image = null;
+        public Image image = null;
         public string imageBase = null;
         public string runCommand = null;
     }

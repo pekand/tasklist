@@ -134,6 +134,14 @@ namespace TaskList
             }
         }
 
+        public static void openDirectory(string path)
+        {
+            if (Directory.Exists(path))
+            {
+                Process.Start("explorer.exe", "/select, \"" + path +"\"");
+            }
+        }
+        /********************************************************************/
         private const int APPCOMMAND_VOLUME_MUTE = 0x80000;
         private const int WM_APPCOMMAND = 0x319;
     
@@ -210,7 +218,9 @@ namespace TaskList
                 Guid ZeroGuid = new Guid();
                 int res = aepv.SetMasterVolumeLevelScalar(Level / 100f, ZeroGuid);
             }
-            catch (Exception ex) { Log.write($"**Could not set audio level** {ex.Message}"); }
+            catch (Exception e) {
+                Log.write(e.Message);
+            }
         }
     }
 }

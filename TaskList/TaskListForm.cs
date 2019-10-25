@@ -33,13 +33,10 @@ namespace TaskList
         int noteIconIndex = 0;
         int systemFolderIconIndex = 0;
 
-        IntPtr currentAppHandle = IntPtr.Zero;
-
         /* FORM EVENTS */
 
         public TaskListForm()
         {
-            currentAppHandle = this.Handle;
 
             Log.write("Constructor");
             InitializeComponent();
@@ -154,7 +151,8 @@ namespace TaskList
             foreach (WindowData window in windowsList)
             {
 
-                if (currentAppHandle == window.handle)
+                //skip current app
+                if (this.Handle == window.handle)
                 {
                     continue;
                 }
@@ -191,7 +189,7 @@ namespace TaskList
                 }
 
                 //skip current app
-                if (window.handle == this.currentAppHandle)
+                if (window.handle == this.Handle)
                 {
                     continue;
                 }
@@ -199,7 +197,7 @@ namespace TaskList
                 this.CreateNode(
                     window.handle,
                     "Window",
-                    null,
+                    window.path,
                     windowsRootNode,
                     false,
                     true,
@@ -833,8 +831,6 @@ namespace TaskList
                 this.FormBorderStyle = FormBorderStyle.Sizable;
             }
 
-            currentAppHandle = this.Handle;
-
             if (this.rootNode != null)
             {
                 this.restoreNodes(allNodes, this.rootNode);
@@ -966,7 +962,7 @@ namespace TaskList
 
                 if (handle != IntPtr.Zero) {
                     nodeData.handle = handle;
-                    nodeData.isCurrentApp = (currentAppHandle == nodeData.handle);                    
+                    nodeData.isCurrentApp = (this.Handle == nodeData.handle);                    
 
                     if (nodeData.handle != null)
                     {
@@ -1335,6 +1331,7 @@ namespace TaskList
                     if (addNodeIn)
                     {
                         targetNode.Nodes.Add(linkNode);
+                        targetNode.Expand();
                     }
 
                     if (addNodeDown && !targetNodeData.isRoot)
@@ -1686,8 +1683,6 @@ namespace TaskList
                     node.Collapse();
                 }
             }
-
-            currentAppHandle = this.Handle;
         }
 
         private void showDesktopToolStripMenuItem_Click(object sender, EventArgs e)

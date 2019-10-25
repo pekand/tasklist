@@ -531,7 +531,7 @@ namespace TaskList
                         continue;
                     }
 
-                    if (nodeData.title == windowData.title)
+                    if (nodeData.windowTitle == windowData.title)
                     {
 
                         nodeData.handle = windowData.handle;

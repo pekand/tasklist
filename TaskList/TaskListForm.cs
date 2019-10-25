@@ -1446,6 +1446,29 @@ namespace TaskList
             TaskManager.ShowDesktop();
         }
 
+        private void muteToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            SystemManager.soundLevel(0);
+        }
 
+        private void toolStripMenuItem2_Click(object sender, EventArgs e)
+        {
+            SystemManager.soundLevel(25);
+        }
+
+        private void toolStripMenuItem3_Click(object sender, EventArgs e)
+        {
+            SystemManager.soundLevel(50);
+        }
+
+        private void toolStripMenuItem4_Click(object sender, EventArgs e)
+        {
+            SystemManager.soundLevel(75);
+        }
+
+        private void toolStripMenuItem5_Click(object sender, EventArgs e)
+        {
+            SystemManager.soundLevel(100);
+        }
     }
 }

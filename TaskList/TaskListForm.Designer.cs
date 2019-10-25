@@ -53,6 +53,12 @@
             this.fontToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.rememberToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.showInTaskbarToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.volumeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.muteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem3 = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem4 = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem5 = new System.Windows.Forms.ToolStripMenuItem();
             this.showDesktopToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tableLayoutPanel = new System.Windows.Forms.TableLayoutPanel();
             this.treeView = new System.Windows.Forms.TreeView();
@@ -119,6 +125,7 @@
             this.menuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fileToolStripMenuItem,
             this.systemToolStripMenuItem,
+            this.volumeToolStripMenuItem,
             this.optionsToolStripMenuItem,
             this.showDesktopToolStripMenuItem});
             this.menuStrip.Location = new System.Drawing.Point(0, 0);
@@ -212,37 +219,84 @@
             // alwaysOnTopToolStripMenuItem
             // 
             this.alwaysOnTopToolStripMenuItem.Name = "alwaysOnTopToolStripMenuItem";
-            this.alwaysOnTopToolStripMenuItem.Size = new System.Drawing.Size(157, 22);
+            this.alwaysOnTopToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.alwaysOnTopToolStripMenuItem.Text = "Always on top";
             this.alwaysOnTopToolStripMenuItem.Click += new System.EventHandler(this.alwaysOnTopToolStripMenuItem_Click);
             // 
             // autorunToolStripMenuItem
             // 
             this.autorunToolStripMenuItem.Name = "autorunToolStripMenuItem";
-            this.autorunToolStripMenuItem.Size = new System.Drawing.Size(157, 22);
+            this.autorunToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.autorunToolStripMenuItem.Text = "Autorun";
             this.autorunToolStripMenuItem.Click += new System.EventHandler(this.autorunToolStripMenuItem_Click);
             // 
             // fontToolStripMenuItem
             // 
             this.fontToolStripMenuItem.Name = "fontToolStripMenuItem";
-            this.fontToolStripMenuItem.Size = new System.Drawing.Size(157, 22);
+            this.fontToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.fontToolStripMenuItem.Text = "Font";
             this.fontToolStripMenuItem.Click += new System.EventHandler(this.fontToolStripMenuItem_Click);
             // 
             // rememberToolStripMenuItem
             // 
             this.rememberToolStripMenuItem.Name = "rememberToolStripMenuItem";
-            this.rememberToolStripMenuItem.Size = new System.Drawing.Size(157, 22);
+            this.rememberToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.rememberToolStripMenuItem.Text = "Remember";
             this.rememberToolStripMenuItem.Click += new System.EventHandler(this.rememberToolStripMenuItem_Click);
             // 
             // showInTaskbarToolStripMenuItem
             // 
             this.showInTaskbarToolStripMenuItem.Name = "showInTaskbarToolStripMenuItem";
-            this.showInTaskbarToolStripMenuItem.Size = new System.Drawing.Size(157, 22);
+            this.showInTaskbarToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.showInTaskbarToolStripMenuItem.Text = "Show in taskbar";
             this.showInTaskbarToolStripMenuItem.Click += new System.EventHandler(this.showInTaskbarToolStripMenuItem_Click);
+            // 
+            // volumeToolStripMenuItem
+            // 
+            this.volumeToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.muteToolStripMenuItem,
+            this.toolStripMenuItem2,
+            this.toolStripMenuItem3,
+            this.toolStripMenuItem4,
+            this.toolStripMenuItem5});
+            this.volumeToolStripMenuItem.Name = "volumeToolStripMenuItem";
+            this.volumeToolStripMenuItem.Size = new System.Drawing.Size(59, 20);
+            this.volumeToolStripMenuItem.Text = "Volume";
+            // 
+            // muteToolStripMenuItem
+            // 
+            this.muteToolStripMenuItem.Name = "muteToolStripMenuItem";
+            this.muteToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.muteToolStripMenuItem.Text = "Mute";
+            this.muteToolStripMenuItem.Click += new System.EventHandler(this.muteToolStripMenuItem_Click);
+            // 
+            // toolStripMenuItem2
+            // 
+            this.toolStripMenuItem2.Name = "toolStripMenuItem2";
+            this.toolStripMenuItem2.Size = new System.Drawing.Size(180, 22);
+            this.toolStripMenuItem2.Text = "25%";
+            this.toolStripMenuItem2.Click += new System.EventHandler(this.toolStripMenuItem2_Click);
+            // 
+            // toolStripMenuItem3
+            // 
+            this.toolStripMenuItem3.Name = "toolStripMenuItem3";
+            this.toolStripMenuItem3.Size = new System.Drawing.Size(180, 22);
+            this.toolStripMenuItem3.Text = "50%";
+            this.toolStripMenuItem3.Click += new System.EventHandler(this.toolStripMenuItem3_Click);
+            // 
+            // toolStripMenuItem4
+            // 
+            this.toolStripMenuItem4.Name = "toolStripMenuItem4";
+            this.toolStripMenuItem4.Size = new System.Drawing.Size(180, 22);
+            this.toolStripMenuItem4.Text = "75%";
+            this.toolStripMenuItem4.Click += new System.EventHandler(this.toolStripMenuItem4_Click);
+            // 
+            // toolStripMenuItem5
+            // 
+            this.toolStripMenuItem5.Name = "toolStripMenuItem5";
+            this.toolStripMenuItem5.Size = new System.Drawing.Size(180, 22);
+            this.toolStripMenuItem5.Text = "100%";
+            this.toolStripMenuItem5.Click += new System.EventHandler(this.toolStripMenuItem5_Click);
             // 
             // showDesktopToolStripMenuItem
             // 
@@ -269,7 +323,6 @@
             // 
             this.treeView.AllowDrop = true;
             this.treeView.BackColor = System.Drawing.SystemColors.Control;
-            this.treeView.Cursor = System.Windows.Forms.Cursors.Arrow;
             this.treeView.Dock = System.Windows.Forms.DockStyle.Fill;
             this.treeView.ForeColor = System.Drawing.SystemColors.ControlText;
             this.treeView.Location = new System.Drawing.Point(3, 3);
@@ -342,6 +395,12 @@
         private System.Windows.Forms.ToolStripMenuItem rememberToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem showInTaskbarToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem pinToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem volumeToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem muteToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem2;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem3;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem4;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem5;
     }
 }
 

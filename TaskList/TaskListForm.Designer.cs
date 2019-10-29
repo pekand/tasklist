@@ -62,13 +62,7 @@
             this.showInTaskbarToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.showDesktopToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tableLayoutPanel = new System.Windows.Forms.TableLayoutPanel();
-
-#if DEBUG
             this.treeView = new System.Windows.Forms.TreeView();
-#else
-            this.treeView = new TaskList.CustomTreeView();
-#endif
-
             this.fontDialog = new System.Windows.Forms.FontDialog();
             this.contextMenuStrip.SuspendLayout();
             this.menuStrip.SuspendLayout();
@@ -77,7 +71,7 @@
             // 
             // updateTimer
             // 
-            this.updateTimer.Interval = 300;
+            this.updateTimer.Interval = 500;
             this.updateTimer.Tick += new System.EventHandler(this.update_Tick);
             // 
             // contextMenuStrip
@@ -345,7 +339,6 @@
             this.treeView.HideSelection = false;
             this.treeView.Location = new System.Drawing.Point(3, 3);
             this.treeView.Name = "treeView";
-            this.treeView.ShowNodeToolTips = false;
             this.treeView.Size = new System.Drawing.Size(798, 1037);
             this.treeView.TabIndex = 2;
             this.treeView.AfterLabelEdit += new System.Windows.Forms.NodeLabelEditEventHandler(this.treeView_AfterLabelEdit);

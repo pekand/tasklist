@@ -65,6 +65,44 @@ namespace TaskList
             return isPopup;
         }
 
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        private static extern int GetClassName(IntPtr hWnd, StringBuilder lpClassName, int nMaxCount);
+
+        [DllImport("dwmapi.dll")]
+        private static extern int DwmGetWindowAttribute(IntPtr hwnd, int dwAttribute, out bool pvAttribute, int cbAttribute);
+
+        [Flags]
+        public enum DwmWindowAttribute : uint
+        {
+            DWMWA_NCRENDERING_ENABLED = 1,
+            DWMWA_NCRENDERING_POLICY,
+            DWMWA_TRANSITIONS_FORCEDISABLED,
+            DWMWA_ALLOW_NCPAINT,
+            DWMWA_CAPTION_BUTTON_BOUNDS,
+            DWMWA_NONCLIENT_RTL_LAYOUT,
+            DWMWA_FORCE_ICONIC_REPRESENTATION,
+            DWMWA_FLIP3D_POLICY,
+            DWMWA_EXTENDED_FRAME_BOUNDS,
+            DWMWA_HAS_ICONIC_BITMAP,
+            DWMWA_DISALLOW_PEEK,
+            DWMWA_EXCLUDED_FROM_PEEK,
+            DWMWA_CLOAK,
+            DWMWA_CLOAKED,
+            DWMWA_FREEZE_REPRESENTATION,
+            DWMWA_LAST
+
+        }
+
+        public static bool isCloacked(IntPtr handle) {
+            DwmGetWindowAttribute(handle, (int)DwmWindowAttribute.DWMWA_CLOAKED, out bool isCloacked, Marshal.SizeOf(typeof(bool)));
+
+            return isCloacked;
+        }
+
+        [DllImport("User32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        static extern long GetClassName(IntPtr hwnd, StringBuilder lpClassName, long nMaxCount);
+
         public static List<WindowData> GetOpenWindows()
         {
             Log.write("TaskManager GetOpenWindows");
@@ -74,13 +112,22 @@ namespace TaskList
             IntPtr hDesktop = IntPtr.Zero;
             EnumDesktopWindows(hDesktop, delegate(IntPtr IntPtr, int lParam)
             {
+
+                /*int cls_max_length = 1000;
+                StringBuilder classText = new StringBuilder("", cls_max_length + 5);
+                GetClassName(IntPtr, classText, cls_max_length + 2);*/
+
                 if (IntPtr == shellWindow)
                     return true;
 
                 if (!IsWindowVisible(IntPtr))
                     return true;
 
-                if (IsWindowPopup(IntPtr))
+                /*if (IsWindowPopup(IntPtr)) {
+                    return true;
+                }*/
+
+                if (isCloacked(IntPtr)) // skip window store hidden apps
                     return true;
 
                 int length = GetWindowTextLength(IntPtr);

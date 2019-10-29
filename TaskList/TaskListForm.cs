@@ -286,7 +286,6 @@ namespace TaskList
             {
                 try
                 {
-                    windowData.title = TaskManager.getWindowTitle(windowData.handle);
                     windowData.image = TaskManager.GetSmallWindowIcon(windowData.handle);
                     windowData.imageBase = ImageManager.ImageToString(windowData.image);
                     windowData.process = TaskManager.getProcessFromHandle(windowData.handle);

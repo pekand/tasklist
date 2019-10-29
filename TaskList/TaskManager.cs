@@ -133,7 +133,8 @@ namespace TaskList
                 int length = GetWindowTextLength(IntPtr);
                 if (length == 0) return true;
 
-                windows.Add(new WindowData(IntPtr));
+
+                windows.Add(new WindowData(IntPtr, getWindowTitle(IntPtr)));
                 return true;
 
             }, IntPtr.Zero);
@@ -384,7 +385,7 @@ namespace TaskList
 
         public static string getWindowTitle(IntPtr hWnd)
         {
-            var length = GetWindowTextLength(hWnd);
+            var length = GetWindowTextLength(hWnd)+1;
             var title = new StringBuilder(length);
             GetWindowText(hWnd, title, length);
             return title.ToString();

@@ -33,6 +33,17 @@ namespace TaskList
         int noteIconIndex = 0;
         int systemFolderIconIndex = 0;
 
+
+        public Color rootColor = Color.FromArgb(0, 0, 0);
+        public Color windowsFolderColor = Color.FromArgb(0, 0, 0);
+        public Color directoryLinkColor = Color.FromArgb(0, 82, 204);
+        public Color linkColor = Color.FromArgb(0, 82, 204);
+        public Color windowColor = Color.FromArgb(0, 0, 0);
+        public Color inactiveWindowColor = Color.FromArgb(128, 128, 128);
+        public Color folderColor = Color.FromArgb(0, 0, 0);
+        public Color noteColor = Color.FromArgb(0, 0, 0);
+
+
         /* FORM EVENTS */
 
         public TaskListForm()
@@ -50,7 +61,7 @@ namespace TaskList
             this.Text += " - DEBUG";
 #endif
 
-            treeView.BeginUpdate();
+            
 
             this.imageList.ImageSize = new System.Drawing.Size(16, 16);
             treeView.ImageList = this.imageList;
@@ -84,8 +95,11 @@ namespace TaskList
                 rootNodeData.title = "Tasks";
                 rootNodeData.isRoot = true;
                 rootNodeData.isMoovable = false;
-                rootNodeData.image = defaultIcon;                
-                this.rootNode = treeView.Nodes.Add("Tasks", "Tasks", this.defaultIconIndex, this.defaultIconIndex);
+                rootNodeData.image = defaultIcon;
+                this.rootNode = new TreeNode();
+                this.rootNode.Text = "Tasks";
+                this.rootNode.ImageIndex = this.defaultIconIndex;
+                this.rootNode.SelectedImageIndex = this.defaultIconIndex;
                 this.rootNode.Tag = rootNodeData;
             }
 
@@ -97,20 +111,28 @@ namespace TaskList
                 windowsNodeData.title = "Windows";
                 windowsNodeData.isMoovable = false;
                 windowsNodeData.isWindowsRoot = true;
-                this.windowsRootNode = rootNode.Nodes.Add("Windows", "Windows", this.defaultIconIndex, this.defaultIconIndex);
-                ((NodeDataModel)this.rootNode.Tag).image = defaultIcon;
+                this.windowsRootNode = new TreeNode();
+                this.windowsRootNode.Text = "Windows";
+                this.windowsRootNode.ImageIndex = this.defaultIconIndex;
+                this.windowsRootNode.SelectedImageIndex = this.defaultIconIndex;
                 this.windowsRootNode.Tag = windowsNodeData;
+                this.rootNode.Nodes.Add(this.windowsRootNode);
             }
 
-            this.updatTree();
+            this.updateTree();
 
+            treeView.BeginUpdate();
 
+            if (rootNode != null) {
+                treeView.Nodes.Add(rootNode);
+            }
             rootNode.Expand();
-
             windowsRootNode.Expand();
+
             treeView.EndUpdate();
 
             autorunToolStripMenuItem.Checked = SystemManager.isAutorunSet();
+
 
             this.updateTimer.Enabled = true;
         }
@@ -130,10 +152,10 @@ namespace TaskList
         private void update_Tick(object sender, EventArgs e)
         {
             Log.write("Update tick");
-            this.updatTree();
+            this.updateTree();
         }
 
-        private void updatTree()
+        private void updateTree()
         {
             Log.write("updatTree");
 
@@ -237,7 +259,7 @@ namespace TaskList
                     oldNodeData.isWindow = false;
                     oldNodeData.isInactiveWindow = true;
                     oldNodeData.handle = IntPtr.Zero;
-
+                    oldNode.ForeColor = inactiveWindowColor;
                     this.allWindowsNodes.Remove(oldNode);
                     this.allInactiveWindowsNodes.Add(oldNode);
                 }
@@ -246,9 +268,6 @@ namespace TaskList
                     this.RemoveNode(oldNode);
                 }
             }
-
-
-            //treeView.EndUpdate();
         }
 
         public void pairInactiveWindowsToNodes(List<WindowData> windowsList = null, bool skipProcessSearch = false)
@@ -261,7 +280,7 @@ namespace TaskList
                 windowsList = TaskManager.GetOpenWindows();
             }
 
-            List<TreeNode> toRemoveNodes = new List<TreeNode>();
+            List<TreeNode> moveToWindowsNodes = new List<TreeNode>();
 
             foreach (WindowData windowData in windowsList)
             {
@@ -298,7 +317,8 @@ namespace TaskList
                         nodeData.isWindow = true;
                         nodeData.isInactiveWindow = false;
                         nodeData.runCommand = windowData.path;
-                        toRemoveNodes.Add(inactiveNode);
+                        inactiveNode.ForeColor = windowColor;
+                        moveToWindowsNodes.Add(inactiveNode);
                         break;
                     }
                 }
@@ -322,7 +342,8 @@ namespace TaskList
                         nodeData.handle = windowData.handle;
                         nodeData.isWindow = true;
                         nodeData.isInactiveWindow = false;
-                        toRemoveNodes.Add(inactiveNode);
+                        inactiveNode.ForeColor = windowColor;
+                        moveToWindowsNodes.Add(inactiveNode);
                         break;
                     }
                 }
@@ -346,7 +367,8 @@ namespace TaskList
                         nodeData.handle = windowData.handle;
                         nodeData.isWindow = true;
                         nodeData.isInactiveWindow = false;
-                        toRemoveNodes.Add(inactiveNode);
+                        inactiveNode.ForeColor = windowColor;
+                        moveToWindowsNodes.Add(inactiveNode);
                         break;
                     }
                 }
@@ -383,7 +405,8 @@ namespace TaskList
                                 nodeData.handle = windowData.handle;
                                 nodeData.isWindow = true;
                                 nodeData.isInactiveWindow = false;
-                                toRemoveNodes.Add(inactiveNode);
+                                inactiveNode.ForeColor = windowColor;
+                                moveToWindowsNodes.Add(inactiveNode);
                                 break;
                             }
                         }
@@ -398,9 +421,10 @@ namespace TaskList
                         Log.write(e.Message);
                     }
                 }
-            }
-
-            foreach (TreeNode node in toRemoveNodes)
+            }            
+            
+            // move nodes from inactive to active windows
+            foreach (TreeNode node in moveToWindowsNodes)
             {
                 allInactiveWindowsNodes.Remove(node);
                 allWindowsNodes.Add(node);
@@ -750,17 +774,19 @@ namespace TaskList
 
                                     if (newNodeData.isRoot)
                                     {
-
+                                        newNode.ForeColor = rootColor;
                                         this.rootNode = newNode;
                                     }
 
                                     if (newNodeData.isWindowsRoot)
                                     {
+                                        newNode.ForeColor = windowsFolderColor;
                                         this.windowsRootNode = newNode;
                                     }
 
                                     if (newNodeData.isFolder)
                                     {
+                                        newNode.ForeColor = folderColor;
                                         newNode.ImageIndex = this.folderIconIndex;
                                         newNode.SelectedImageIndex = this.folderIconIndex;
                                         allFolderNodes.Add(newNode);
@@ -777,6 +803,7 @@ namespace TaskList
                                             newNode.Text = newNodeData.windowTitle;
                                         }
 
+                                        newNode.ForeColor = windowColor;
                                     }
                                     else
                                     {
@@ -785,6 +812,7 @@ namespace TaskList
 
                                     if (newNodeData.isNote)
                                     {
+                                        newNode.ForeColor = noteColor;
                                         newNode.ImageIndex = this.noteIconIndex;
                                         newNode.SelectedImageIndex = this.noteIconIndex;
                                         allNoteNodes.Add(newNode);
@@ -797,11 +825,22 @@ namespace TaskList
                                             newNode.SelectedImageIndex = this.systemFolderIconIndex;
                                         }
 
+                                        if (File.Exists(newNodeData.runCommand))
+                                        {
+                                            newNode.ForeColor = linkColor;
+                                        }
+
+                                        if (Directory.Exists(newNodeData.runCommand))
+                                        {
+                                            newNode.ForeColor = directoryLinkColor;
+                                        }
+
                                         allLinkNodes.Add(newNode);
                                     }
 
                                     if (newNodeData.isInactiveWindow)
                                     {
+                                        newNode.ForeColor = inactiveWindowColor;
                                         allInactiveWindowsNodes.Add(newNode);
                                     }
                                 }
@@ -848,7 +887,6 @@ namespace TaskList
                     }
                 }
 
-                treeView.Nodes.Add(rootNode);
                 this.lastNodeIndex = lastNodeIndex;
             }
 
@@ -911,6 +949,7 @@ namespace TaskList
             }
 
             if (isFolder) {
+                node.ForeColor = folderColor;
                 nodeData.isFolder = true;
                 nodeData.imageIndex = this.folderIconIndex;
                 node.ImageIndex = this.folderIconIndex;
@@ -919,6 +958,7 @@ namespace TaskList
             } else
             if (isNote)
             {
+                node.ForeColor = noteColor;
                 nodeData.isNote = true;
                 nodeData.imageIndex = this.noteIconIndex;
                 node.ImageIndex = this.noteIconIndex;
@@ -927,7 +967,7 @@ namespace TaskList
             }
             else
             if (isLink)
-            {                
+            {
                 nodeData.isLink = true;
                 nodeData.runCommand = runCommand;
 
@@ -938,6 +978,7 @@ namespace TaskList
                         nodeData.imageIndex = systemFolderIconIndex;
                         node.ImageIndex = nodeData.imageIndex;
                         node.SelectedImageIndex = nodeData.imageIndex;
+                        node.ForeColor = directoryLinkColor;
                     }
 
                     if (File.Exists(runCommand)) {
@@ -947,6 +988,7 @@ namespace TaskList
                         nodeData.imageIndex = this.lastImageIndex++;
                         node.ImageIndex = nodeData.imageIndex;
                         node.SelectedImageIndex = nodeData.imageIndex;
+                        node.ForeColor = linkColor;
                     }
                 } catch (Exception e) {
                     Log.write(e.Message);
@@ -957,6 +999,7 @@ namespace TaskList
             else
             if (isWindow)
             {
+                node.ForeColor = windowColor;
                 nodeData.isWindow = true;
                 allWindowsNodes.Add(node);
 
@@ -980,7 +1023,9 @@ namespace TaskList
             } else
             if (isInactiveWindow)
             {
+                node.ForeColor = inactiveWindowColor;
                 nodeData.isInactiveWindow = true;
+                node.ForeColor = inactiveWindowColor;
                 allInactiveWindowsNodes.Add(node);
             }
 
@@ -1285,6 +1330,11 @@ namespace TaskList
             bool addNodeIn = (targetNodeBounds.Y + blockSize <= targetPoint.Y && targetPoint.Y < targetNodeBounds.Y + 2 * blockSize);
             bool addNodeDown = (targetNodeBounds.Y + 2 * blockSize <= targetPoint.Y);
 
+            if (e.Data.GetDataPresent(DataFormats.Text, false))
+            {
+                string text = (string)(e.Data.GetData(DataFormats.Text, false));
+            }
+
             if (e.Data.GetDataPresent(DataFormats.FileDrop, false))
             {
                 string[] systemDrop = (string[])(e.Data.GetData(DataFormats.FileDrop, false));
@@ -1336,9 +1386,17 @@ namespace TaskList
 
                     if (addNodeDown && !targetNodeData.isRoot)
                     {
-                        int targetNodePosition = targetNode.Parent.Nodes.IndexOf(targetNode);
-                        targetNode.Parent.Nodes.Insert(targetNodePosition + 1, linkNode);
-                        linkNodeData.parent = ((NodeDataModel)targetNode.Parent.Tag).id;
+                        if (targetNode.Nodes.Count > 0 && targetNode.IsExpanded)
+                        {
+                            int targetNodePosition = 0;
+                            targetNode.Nodes.Insert(targetNodePosition + 1, linkNode);
+                            linkNodeData.parent = targetNodeData.id;
+                        }
+                        else {
+                            int targetNodePosition = targetNode.Parent.Nodes.IndexOf(targetNode);
+                            targetNode.Parent.Nodes.Insert(targetNodePosition + 1, linkNode);
+                            linkNodeData.parent = ((NodeDataModel)targetNode.Parent.Tag).id;
+                        }                        
                     }
                 }
 
@@ -1347,19 +1405,21 @@ namespace TaskList
 
 
             if (targetNode == null) {
+                treeView.Invalidate();
                 return;
             }
 
             TreeNode draggedNode = (TreeNode)e.Data.GetData(typeof(TreeNode));
 
             if (draggedNode == null) {
+                treeView.Invalidate();
                 return;
             }
 
             NodeDataModel draggedNodeData = (NodeDataModel)draggedNode.Tag;
 
-            if (draggedNode.Equals(targetNode) || ContainsNode(draggedNode, targetNode))
-            {
+            if (ContainsNode(draggedNode, targetNode)) {
+                treeView.Invalidate();
                 return;
             }
 
@@ -1368,13 +1428,32 @@ namespace TaskList
     
                 if (addNodeUp && !targetNodeData.isRoot)
                 {
-                    draggedNode.Remove();
-                    int targetNodePosition = targetNode.Parent.Nodes.IndexOf(targetNode);
-                    targetNode.Parent.Nodes.Insert(targetNodePosition, draggedNode);
-                    draggedNodeData.parent = ((NodeDataModel)targetNode.Parent.Tag).id;
+                    int previousNodeIndex = targetNode.Parent.Nodes.IndexOf(targetNode) - 1;
+
+                    // mov to nodebefore target node as last child
+                    if (previousNodeIndex >=0 && targetNode.Parent.Nodes[previousNodeIndex].Nodes.Count > 0 && targetNode.Parent.Nodes[previousNodeIndex].IsExpanded)
+                    {
+                        TreeNode previousNode = targetNode.Parent.Nodes[previousNodeIndex];
+                        draggedNode.Remove();
+                        previousNode.Nodes.Add(draggedNode);
+                        draggedNodeData.parent = ((NodeDataModel)targetNode.Parent.Nodes[previousNodeIndex].Tag).id;
+                        
+                    }
+                    else
+                    {
+                        // move before target node
+                        if (!draggedNode.Equals(targetNode)) {
+                            TreeNode targetParentNode = targetNode.Parent;
+                            draggedNode.Remove();
+                            int targetNodePosition = targetParentNode.Nodes.IndexOf(targetNode);
+                            targetParentNode.Nodes.Insert(targetNodePosition, draggedNode);
+                            draggedNodeData.parent = ((NodeDataModel)targetParentNode.Tag).id;
+                        }
+                    }
                 }
 
-                if (addNodeIn)
+                // move to target node
+                if (addNodeIn && (!draggedNode.Equals(targetNode)))
                 {
                     draggedNode.Remove();
                     targetNode.Nodes.Add(draggedNode);
@@ -1385,10 +1464,27 @@ namespace TaskList
 
                 if (addNodeDown && !targetNodeData.isRoot)
                 {
-                    draggedNode.Remove();
-                    int targetNodePosition = targetNode.Parent.Nodes.IndexOf(targetNode);
-                    targetNode.Parent.Nodes.Insert(targetNodePosition + 1, draggedNode);
-                    draggedNodeData.parent = ((NodeDataModel)targetNode.Parent.Tag).id;
+                    // move to target child node as firs child
+                    if (targetNode.Nodes.Count > 0 && targetNode.IsExpanded)
+                    {
+                        draggedNode.Remove();
+                        int targetNodePosition = 0;
+                        targetNode.Nodes.Insert(targetNodePosition, draggedNode);
+                        draggedNodeData.parent = targetNodeData.id;
+                        
+                    }
+                    else
+                    {
+                        // move after target node
+                        if (!draggedNode.Equals(targetNode))
+                        {
+                            TreeNode targetParentNode = targetNode.Parent;
+                            draggedNode.Remove();
+                            int targetNodePosition = targetParentNode.Nodes.IndexOf(targetNode);
+                            targetNode.Parent.Nodes.Insert(targetNodePosition + 1, draggedNode);
+                            draggedNodeData.parent = ((NodeDataModel)targetParentNode.Tag).id;
+                        }
+                    }
                 }
             }
 
@@ -1714,6 +1810,32 @@ namespace TaskList
         private void toolStripMenuItem5_Click(object sender, EventArgs e)
         {
             SystemManager.soundLevel(100);
+        }
+
+        private void treeView_KeyUp(object sender, KeyEventArgs e)
+        {
+
+        }
+
+
+        private void treeView_Validating(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+
+        }
+
+        private void treeView_AfterSelect(object sender, TreeViewEventArgs e)
+        {
+
+        }
+
+        private void treeView_DrawNode(object sender, DrawTreeNodeEventArgs e)
+        {
+            if (e.Node == null) return;
+
+            var font = e.Node.NodeFont ?? e.Node.TreeView.Font;
+            SolidBrush myBrush = new SolidBrush(e.Node.BackColor);
+            e.Graphics.FillRectangle(myBrush, e.Bounds);
+            TextRenderer.DrawText(e.Graphics, e.Node.Text, font, e.Bounds, e.Node.ForeColor, TextFormatFlags.GlyphOverhangPadding);
         }
     }
 }

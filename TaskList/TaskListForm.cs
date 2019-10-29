@@ -1833,7 +1833,7 @@ namespace TaskList
             if (e.Node == null) return;
 
             var font = e.Node.NodeFont ?? e.Node.TreeView.Font;
-            SolidBrush myBrush = new SolidBrush(e.Node.BackColor);
+            SolidBrush myBrush = new SolidBrush(e.Node == treeView.SelectedNode ? Color.FromArgb(204, 204, 255):SystemColors.Control);
             e.Graphics.FillRectangle(myBrush, e.Bounds);
             TextRenderer.DrawText(e.Graphics, e.Node.Text, font, e.Bounds, e.Node.ForeColor, TextFormatFlags.GlyphOverhangPadding);
         }

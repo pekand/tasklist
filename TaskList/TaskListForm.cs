@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.IO;
@@ -1835,6 +1836,67 @@ namespace TaskList
             SolidBrush myBrush = new SolidBrush(e.Node == treeView.SelectedNode ? Color.FromArgb(204, 204, 255):SystemColors.Control);
             e.Graphics.FillRectangle(myBrush, e.Bounds);
             TextRenderer.DrawText(e.Graphics, e.Node.Text, font, e.Bounds, e.Node.ForeColor, TextFormatFlags.GlyphOverhangPadding);
+        }
+
+        private void controlPanelToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            System.Diagnostics.Process.Start("control");
+        }
+
+        private void programAndFeaturesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            System.Diagnostics.Process.Start("control", "appwiz.cpl");
+        }
+
+        private void deviceManagerToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            System.Diagnostics.Process.Start("control", "hdwwiz.cpl");            
+        }
+
+        private void internetPropertiesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+            System.Diagnostics.Process.Start("control", "inetcpl.cpl");
+        }
+
+        private void soundToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            System.Diagnostics.Process.Start("control", "mmsys.cpl");
+        }
+
+        private void soundToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            System.Diagnostics.Process.Start("control", "mmsys.cpl");
+        }
+
+        private void networkConnectionsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            System.Diagnostics.Process.Start("control", "ncpa.cpl");
+        }
+
+        private void powerOptionsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            System.Diagnostics.Process.Start("control", "powercfg.cpl");
+        }
+
+        private void systemPropertiesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            System.Diagnostics.Process.Start("control", "sysdm.cpl");
+        }
+
+        private void dateAndTimeToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            System.Diagnostics.Process.Start("control", "timedate.cpl");
+        }
+
+        private void securityToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            System.Diagnostics.Process.Start("control", "wscui.cpl");
+        }
+
+        private void settingsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            System.Diagnostics.Process.Start("control", "desk.cpl");
         }
     }
 }

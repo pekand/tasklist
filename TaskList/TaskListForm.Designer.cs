@@ -42,6 +42,19 @@
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.closeApplicationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.systemToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.settingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.systemSettingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.controlPanelToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.programAndFeaturesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.systemPropertiesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.soundToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.networkConnectionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.internetPropertiesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.powerOptionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.securityToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.deviceManagerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.dateAndTimeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
             this.lockToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.signOutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.sleepToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -54,6 +67,7 @@
             this.toolStripMenuItem3 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem4 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem5 = new System.Windows.Forms.ToolStripMenuItem();
+            this.soundToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.optionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.alwaysOnTopToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.autorunToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -161,6 +175,8 @@
             // systemToolStripMenuItem
             // 
             this.systemToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.settingsToolStripMenuItem,
+            this.toolStripMenuItem1,
             this.lockToolStripMenuItem,
             this.signOutToolStripMenuItem,
             this.sleepToolStripMenuItem,
@@ -171,45 +187,145 @@
             this.systemToolStripMenuItem.Size = new System.Drawing.Size(57, 20);
             this.systemToolStripMenuItem.Text = "System";
             // 
+            // settingsToolStripMenuItem
+            // 
+            this.settingsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.systemSettingsToolStripMenuItem,
+            this.controlPanelToolStripMenuItem,
+            this.programAndFeaturesToolStripMenuItem,
+            this.systemPropertiesToolStripMenuItem,
+            this.soundToolStripMenuItem,
+            this.networkConnectionsToolStripMenuItem,
+            this.internetPropertiesToolStripMenuItem,
+            this.powerOptionsToolStripMenuItem,
+            this.securityToolStripMenuItem,
+            this.deviceManagerToolStripMenuItem,
+            this.dateAndTimeToolStripMenuItem});
+            this.settingsToolStripMenuItem.Name = "settingsToolStripMenuItem";
+            this.settingsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.settingsToolStripMenuItem.Text = "Settings";
+            // 
+            // systemSettingsToolStripMenuItem
+            // 
+            this.systemSettingsToolStripMenuItem.Name = "systemSettingsToolStripMenuItem";
+            this.systemSettingsToolStripMenuItem.Size = new System.Drawing.Size(211, 22);
+            this.systemSettingsToolStripMenuItem.Text = "Settings";
+            this.systemSettingsToolStripMenuItem.Click += new System.EventHandler(this.settingsToolStripMenuItem_Click);
+            // 
+            // controlPanelToolStripMenuItem
+            // 
+            this.controlPanelToolStripMenuItem.Name = "controlPanelToolStripMenuItem";
+            this.controlPanelToolStripMenuItem.Size = new System.Drawing.Size(211, 22);
+            this.controlPanelToolStripMenuItem.Text = "Control panel";
+            this.controlPanelToolStripMenuItem.Click += new System.EventHandler(this.controlPanelToolStripMenuItem_Click);
+            // 
+            // programAndFeaturesToolStripMenuItem
+            // 
+            this.programAndFeaturesToolStripMenuItem.Name = "programAndFeaturesToolStripMenuItem";
+            this.programAndFeaturesToolStripMenuItem.Size = new System.Drawing.Size(211, 22);
+            this.programAndFeaturesToolStripMenuItem.Text = "Program and Features";
+            this.programAndFeaturesToolStripMenuItem.Click += new System.EventHandler(this.programAndFeaturesToolStripMenuItem_Click);
+            // 
+            // systemPropertiesToolStripMenuItem
+            // 
+            this.systemPropertiesToolStripMenuItem.Name = "systemPropertiesToolStripMenuItem";
+            this.systemPropertiesToolStripMenuItem.Size = new System.Drawing.Size(211, 22);
+            this.systemPropertiesToolStripMenuItem.Text = "System properties";
+            this.systemPropertiesToolStripMenuItem.Click += new System.EventHandler(this.systemPropertiesToolStripMenuItem_Click);
+            // 
+            // soundToolStripMenuItem
+            // 
+            this.soundToolStripMenuItem.Name = "soundToolStripMenuItem";
+            this.soundToolStripMenuItem.Size = new System.Drawing.Size(211, 22);
+            this.soundToolStripMenuItem.Text = "Sound";
+            this.soundToolStripMenuItem.Click += new System.EventHandler(this.soundToolStripMenuItem_Click);
+            // 
+            // networkConnectionsToolStripMenuItem
+            // 
+            this.networkConnectionsToolStripMenuItem.Name = "networkConnectionsToolStripMenuItem";
+            this.networkConnectionsToolStripMenuItem.Size = new System.Drawing.Size(211, 22);
+            this.networkConnectionsToolStripMenuItem.Text = "Network Connections";
+            this.networkConnectionsToolStripMenuItem.Click += new System.EventHandler(this.networkConnectionsToolStripMenuItem_Click);
+            // 
+            // internetPropertiesToolStripMenuItem
+            // 
+            this.internetPropertiesToolStripMenuItem.Name = "internetPropertiesToolStripMenuItem";
+            this.internetPropertiesToolStripMenuItem.Size = new System.Drawing.Size(211, 22);
+            this.internetPropertiesToolStripMenuItem.Text = "Internet Properties";
+            this.internetPropertiesToolStripMenuItem.Click += new System.EventHandler(this.internetPropertiesToolStripMenuItem_Click);
+            // 
+            // powerOptionsToolStripMenuItem
+            // 
+            this.powerOptionsToolStripMenuItem.Name = "powerOptionsToolStripMenuItem";
+            this.powerOptionsToolStripMenuItem.Size = new System.Drawing.Size(211, 22);
+            this.powerOptionsToolStripMenuItem.Text = "Power options";
+            this.powerOptionsToolStripMenuItem.Click += new System.EventHandler(this.powerOptionsToolStripMenuItem_Click);
+            // 
+            // securityToolStripMenuItem
+            // 
+            this.securityToolStripMenuItem.Name = "securityToolStripMenuItem";
+            this.securityToolStripMenuItem.Size = new System.Drawing.Size(211, 22);
+            this.securityToolStripMenuItem.Text = "Security and Maintenance";
+            this.securityToolStripMenuItem.Click += new System.EventHandler(this.securityToolStripMenuItem_Click);
+            // 
+            // deviceManagerToolStripMenuItem
+            // 
+            this.deviceManagerToolStripMenuItem.Name = "deviceManagerToolStripMenuItem";
+            this.deviceManagerToolStripMenuItem.Size = new System.Drawing.Size(211, 22);
+            this.deviceManagerToolStripMenuItem.Text = "Device Manager";
+            this.deviceManagerToolStripMenuItem.Click += new System.EventHandler(this.deviceManagerToolStripMenuItem_Click);
+            // 
+            // dateAndTimeToolStripMenuItem
+            // 
+            this.dateAndTimeToolStripMenuItem.Name = "dateAndTimeToolStripMenuItem";
+            this.dateAndTimeToolStripMenuItem.Size = new System.Drawing.Size(211, 22);
+            this.dateAndTimeToolStripMenuItem.Text = "Date and Time";
+            this.dateAndTimeToolStripMenuItem.Click += new System.EventHandler(this.dateAndTimeToolStripMenuItem_Click);
+            // 
+            // toolStripMenuItem1
+            // 
+            this.toolStripMenuItem1.Name = "toolStripMenuItem1";
+            this.toolStripMenuItem1.Size = new System.Drawing.Size(177, 6);
+            // 
             // lockToolStripMenuItem
             // 
             this.lockToolStripMenuItem.Name = "lockToolStripMenuItem";
-            this.lockToolStripMenuItem.Size = new System.Drawing.Size(128, 22);
+            this.lockToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.lockToolStripMenuItem.Text = "Lock";
             this.lockToolStripMenuItem.Click += new System.EventHandler(this.lockToolStripMenuItem_Click);
             // 
             // signOutToolStripMenuItem
             // 
             this.signOutToolStripMenuItem.Name = "signOutToolStripMenuItem";
-            this.signOutToolStripMenuItem.Size = new System.Drawing.Size(128, 22);
+            this.signOutToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.signOutToolStripMenuItem.Text = "Sign out";
             this.signOutToolStripMenuItem.Click += new System.EventHandler(this.signOutToolStripMenuItem_Click);
             // 
             // sleepToolStripMenuItem
             // 
             this.sleepToolStripMenuItem.Name = "sleepToolStripMenuItem";
-            this.sleepToolStripMenuItem.Size = new System.Drawing.Size(128, 22);
+            this.sleepToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.sleepToolStripMenuItem.Text = "Sleep";
             this.sleepToolStripMenuItem.Click += new System.EventHandler(this.sleepToolStripMenuItem_Click);
             // 
             // hibernateToolStripMenuItem
             // 
             this.hibernateToolStripMenuItem.Name = "hibernateToolStripMenuItem";
-            this.hibernateToolStripMenuItem.Size = new System.Drawing.Size(128, 22);
+            this.hibernateToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.hibernateToolStripMenuItem.Text = "Hibernate";
             this.hibernateToolStripMenuItem.Click += new System.EventHandler(this.hibernateToolStripMenuItem_Click);
             // 
             // restartToolStripMenuItem
             // 
             this.restartToolStripMenuItem.Name = "restartToolStripMenuItem";
-            this.restartToolStripMenuItem.Size = new System.Drawing.Size(128, 22);
+            this.restartToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.restartToolStripMenuItem.Text = "Restart";
             this.restartToolStripMenuItem.Click += new System.EventHandler(this.restartToolStripMenuItem_Click);
             // 
             // shutdownToolStripMenuItem
             // 
             this.shutdownToolStripMenuItem.Name = "shutdownToolStripMenuItem";
-            this.shutdownToolStripMenuItem.Size = new System.Drawing.Size(128, 22);
+            this.shutdownToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.shutdownToolStripMenuItem.Text = "Shutdown";
             this.shutdownToolStripMenuItem.Click += new System.EventHandler(this.shutdownToolStripMenuItem_Click);
             // 
@@ -220,7 +336,8 @@
             this.toolStripMenuItem2,
             this.toolStripMenuItem3,
             this.toolStripMenuItem4,
-            this.toolStripMenuItem5});
+            this.toolStripMenuItem5,
+            this.soundToolStripMenuItem1});
             this.volumeToolStripMenuItem.Name = "volumeToolStripMenuItem";
             this.volumeToolStripMenuItem.Size = new System.Drawing.Size(59, 20);
             this.volumeToolStripMenuItem.Text = "Volume";
@@ -259,6 +376,13 @@
             this.toolStripMenuItem5.Size = new System.Drawing.Size(156, 22);
             this.toolStripMenuItem5.Text = "100%";
             this.toolStripMenuItem5.Click += new System.EventHandler(this.toolStripMenuItem5_Click);
+            // 
+            // soundToolStripMenuItem1
+            // 
+            this.soundToolStripMenuItem1.Name = "soundToolStripMenuItem1";
+            this.soundToolStripMenuItem1.Size = new System.Drawing.Size(156, 22);
+            this.soundToolStripMenuItem1.Text = "Sound";
+            this.soundToolStripMenuItem1.Click += new System.EventHandler(this.soundToolStripMenuItem1_Click);
             // 
             // optionsToolStripMenuItem
             // 
@@ -419,6 +543,20 @@
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem4;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem5;
         private System.Windows.Forms.ToolStripMenuItem noteToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem settingsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem controlPanelToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripMenuItem1;
+        private System.Windows.Forms.ToolStripMenuItem programAndFeaturesToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem deviceManagerToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem internetPropertiesToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem soundToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem soundToolStripMenuItem1;
+        private System.Windows.Forms.ToolStripMenuItem networkConnectionsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem powerOptionsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem systemPropertiesToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem dateAndTimeToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem securityToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem systemSettingsToolStripMenuItem;
     }
 }
 

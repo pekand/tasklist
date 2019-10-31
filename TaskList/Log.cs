@@ -10,22 +10,24 @@ namespace TaskList
     public static class Log
     {
 #if DEBUG
+        private static string lastMessage = null;
         public static bool directoryExists = false;
         public static string logFileName = String.Format("log\\{0}-log.txt", DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss"));
 #endif
 
         public static void write(string text = "") {
 #if DEBUG
+            if (text == lastMessage) { // remove duplicite messages
+                return;
+            }
+
             if (!directoryExists && !Directory.Exists("log"))
             {
                 Directory.CreateDirectory("log");
                 directoryExists = true;
             }
 
-            if (!Directory.Exists("log")) {
-                Directory.CreateDirectory("log");
-            }
-
+            lastMessage = text;
             File.AppendAllText(logFileName, text + Environment.NewLine);
 #endif
         }

@@ -22,6 +22,8 @@ namespace TaskList
         public Process process = null;
         public string path = null;
 
+        public bool dataSet = false;
+
         public WindowData(IntPtr handle, string title = null, Image image = null, Process process = null) {
             this.handle = handle;
             this.title = title;
@@ -103,11 +105,11 @@ namespace TaskList
         [DllImport("User32.dll", SetLastError = true, CharSet = CharSet.Auto)]
         static extern long GetClassName(IntPtr hwnd, StringBuilder lpClassName, long nMaxCount);
 
-        public static List<WindowData> GetOpenWindows()
+        public static void GetOpenWindows(List<WindowData> windowsList, List<WindowData> newWindowsList)
         {
             Log.write("TaskManager GetOpenWindows");
             IntPtr shellWindow = GetShellWindow();
-            List<WindowData> windows = new List<WindowData>();
+            List<IntPtr> windowsHandles = new List<IntPtr>();
 
             IntPtr hDesktop = IntPtr.Zero;
             EnumDesktopWindows(hDesktop, delegate(IntPtr IntPtr, int lParam)
@@ -133,13 +135,63 @@ namespace TaskList
                 int length = GetWindowTextLength(IntPtr);
                 if (length == 0) return true;
 
+                bool exists = false;
+                foreach (WindowData windowData in windowsList) {
+                    if (windowData.handle == IntPtr) {
+                        exists = true;
+                        break;
+                    }
+                }
 
-                windows.Add(new WindowData(IntPtr, getWindowTitle(IntPtr)));
+                if (!exists) {
+                    WindowData newWindow = new WindowData(IntPtr, getWindowTitle(IntPtr));
+                    newWindowsList.Add(newWindow);
+                    windowsList.Add(newWindow);
+                }
+                windowsHandles.Add(IntPtr);
+
                 return true;
 
             }, IntPtr.Zero);
 
-            return windows;
+            List<WindowData> toRemove = new List<WindowData>();
+
+            foreach (WindowData windowData in windowsList)
+            {
+                if (!windowsHandles.Contains(windowData.handle))
+                {
+                    toRemove.Add(windowData);
+                }
+            }
+
+            foreach (WindowData windowData in toRemove)
+            {
+                windowsList.Remove(windowData);
+            }
+
+            foreach (WindowData windowData in windowsList)
+            {
+                try
+                {
+                    if (!windowData.dataSet) {
+                        windowData.image = TaskManager.GetSmallWindowIcon(windowData.handle);
+                        windowData.imageBase = ImageManager.ImageToString(windowData.image);
+                        windowData.process = TaskManager.getProcessFromHandle(windowData.handle);
+                        windowData.path = windowData.process != null ? windowData.process.MainModule.FileName : null;
+                        windowData.dataSet = true;
+                    }
+
+                    string windowTitle = getWindowTitle(windowData.handle);
+                    if (windowTitle != windowData.title) {
+                        windowData.title = windowTitle;
+                    }
+                }
+                catch (Exception e)
+                {
+                    Log.write(e.Message);
+                }
+            }
+
         }
 
 
@@ -264,18 +316,15 @@ namespace TaskList
         
         /********************************************************************/
 
-        public static void ShowDesktop()
+        public static void ShowDesktop(List<WindowData> windowsList, IntPtr currentAppHandle)
         {
             Log.write("TaskManager ShowDesktop");
 
             const int SW_MINIMIZE = 6;
-            IntPtr handle = Process.GetCurrentProcess().MainWindowHandle;
-
-            List<WindowData> windowsList = TaskManager.GetOpenWindows();
 
             foreach (WindowData window in windowsList)
             {
-                if (handle != window.handle) {
+                if (currentAppHandle != window.handle) {
                     ShowWindow(window.handle, SW_MINIMIZE);
                 }
             }
@@ -333,52 +382,6 @@ namespace TaskList
             }
 
             return childHandles;
-        }
-
-        public static void FindProcessByWithWindowHandle(List<WindowData> windowData)
-        {
-            foreach (Process process in Process.GetProcesses())
-            {
-                
-                try
-                {
-                    if (process.MainWindowHandle == IntPtr.Zero || process.MainWindowTitle == "")
-                    {
-                        continue;
-                    }
-
-                    foreach (WindowData window in windowData)
-                    {
-
-                        List<IntPtr> childrenWindows = GetAllChildHandles(process.MainWindowHandle);
-
-                        foreach (IntPtr handle in childrenWindows)
-                        {
-                            if (handle == window.handle)
-                            {
-                                window.process = process;
-                                continue;
-                            }
-                        }
-
-                        if (process.MainWindowHandle == window.handle)
-                        {
-                            window.process = process;
-                            continue;
-                        }
-
-
-                    }
-                }
-                catch (System.InvalidOperationException e)
-                {
-                    Log.write(e.Message);
-                }
-                catch (System.ComponentModel.Win32Exception e)
-                {
-                    Log.write(e.Message);
-                }
-            }
         }
 
         /********************************************************************/

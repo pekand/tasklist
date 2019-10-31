@@ -26,6 +26,8 @@ namespace TaskList
         List<TreeNode> allNoteNodes = new List<TreeNode>();
         List<TreeNode> allLinkNodes = new List<TreeNode>();
 
+        List<WindowData> windowsList = new List<WindowData>();
+
         ImageList imageList = new ImageList();
         int lastNodeIndex = 0;
         int lastImageIndex = 0;
@@ -33,7 +35,6 @@ namespace TaskList
         int folderIconIndex = 0;
         int noteIconIndex = 0;
         int systemFolderIconIndex = 0;
-
 
         public Color rootColor = Color.FromArgb(0, 0, 0);
         public Color windowsFolderColor = Color.FromArgb(0, 0, 0);
@@ -43,7 +44,6 @@ namespace TaskList
         public Color inactiveWindowColor = Color.FromArgb(128, 128, 128);
         public Color folderColor = Color.FromArgb(0, 0, 0);
         public Color noteColor = Color.FromArgb(0, 0, 0);
-
 
         /* FORM EVENTS */
 
@@ -87,7 +87,11 @@ namespace TaskList
 
             this.restoreFormSettings();
 
-            this.pairInactiveWindowsToNodes();
+            List<WindowData> newWindowsList = new List<WindowData>();
+
+            this.pairInactiveWindowsToNodes(newWindowsList);
+
+            newWindowsList.Clear();
 
             if (this.rootNode == null) {
                 var rootNodeData = new NodeDataModel();
@@ -150,6 +154,7 @@ namespace TaskList
         }
 
         /* UPDATE */
+
         private void update_Tick(object sender, EventArgs e)
         {
             Log.write("Update tick");
@@ -163,13 +168,16 @@ namespace TaskList
             List<TreeNode> toRemoveNodes = new List<TreeNode>();
 
             // windows add 
-            List<WindowData> windowsList = TaskManager.GetOpenWindows();
+            List<WindowData> newWindowsList = new List<WindowData>();
 
+            TaskManager.GetOpenWindows(windowsList, newWindowsList);
 
-            if (this.allInactiveWindowsNodes.Count > 0)
+            if (this.allInactiveWindowsNodes.Count > 0 && newWindowsList.Count > 0)
             {
-                this.pairInactiveWindowsToNodes(windowsList, true);
+                this.pairInactiveWindowsToNodes(newWindowsList);
             }
+
+            newWindowsList.Clear();
 
             foreach (WindowData window in windowsList)
             {
@@ -219,7 +227,7 @@ namespace TaskList
 
                 this.CreateNode(
                     window.handle,
-                    "Window",
+                    window.title,
                     window.path,
                     windowsRootNode,
                     false,
@@ -271,35 +279,18 @@ namespace TaskList
             }
         }
 
-        public void pairInactiveWindowsToNodes(List<WindowData> windowsList = null, bool skipProcessSearch = false)
+        public void pairInactiveWindowsToNodes(List<WindowData> newWindowsList)
         {
             Log.write("pairInactiveWindowsToNodes");
 
-            // map window by window title
-            if (windowsList == null)
-            {
-                windowsList = TaskManager.GetOpenWindows();
+            if (newWindowsList.Count == 0) {
+                return;
             }
 
             List<TreeNode> moveToWindowsNodes = new List<TreeNode>();
 
-            foreach (WindowData windowData in windowsList)
-            {
-                try
-                {
-                    windowData.image = TaskManager.GetSmallWindowIcon(windowData.handle);
-                    windowData.imageBase = ImageManager.ImageToString(windowData.image);
-                    windowData.process = TaskManager.getProcessFromHandle(windowData.handle);
-                    windowData.path = windowData.process != null ? windowData.process.MainModule.FileName : null;
-                }
-                catch (Exception e)
-                {
-                    Log.write(e.Message);
-                }
-            }
-
             // search by title
-            foreach (WindowData windowData in windowsList)
+            foreach (WindowData windowData in newWindowsList)
             {
                 foreach (TreeNode inactiveNode in allInactiveWindowsNodes)
                 {
@@ -325,7 +316,7 @@ namespace TaskList
             }
 
             //search by process path
-            foreach (WindowData windowData in windowsList)
+            foreach (WindowData windowData in newWindowsList)
             {
                 foreach (TreeNode inactiveNode in allInactiveWindowsNodes)
                 {
@@ -350,7 +341,7 @@ namespace TaskList
             }
 
             // search by icon
-            foreach (WindowData windowData in windowsList)
+            foreach (WindowData windowData in newWindowsList)
             {
                 foreach (TreeNode inactiveNode in allInactiveWindowsNodes)
                 {
@@ -373,55 +364,6 @@ namespace TaskList
                     }
                 }
             }
-
-            if (!skipProcessSearch)
-            {
-                TaskManager.FindProcessByWithWindowHandle(windowsList);
-
-                //map window by parent process
-                foreach (WindowData windowData in windowsList)
-                {
-
-                    try
-                    {
-                        if (windowData.process == null)
-                        {
-                            continue;
-                        }
-
-                        string processPath = windowData.process.MainModule.FileName;
-
-                        foreach (TreeNode inactiveNode in allInactiveWindowsNodes)
-                        {
-                            NodeDataModel nodeData = (NodeDataModel)inactiveNode.Tag;
-
-                            if (nodeData.handle != IntPtr.Zero)
-                            {
-                                continue;
-                            }
-
-                            if (nodeData.runCommand == processPath)
-                            {
-                                nodeData.handle = windowData.handle;
-                                nodeData.isWindow = true;
-                                nodeData.isInactiveWindow = false;
-                                inactiveNode.ForeColor = windowColor;
-                                moveToWindowsNodes.Add(inactiveNode);
-                                break;
-                            }
-                        }
-
-                    }
-                    catch (System.ComponentModel.Win32Exception e)
-                    {
-                        Log.write(e.Message);
-                    }
-                    catch (System.InvalidOperationException e)
-                    {
-                        Log.write(e.Message);
-                    }
-                }
-            }            
             
             // move nodes from inactive to active windows
             foreach (TreeNode node in moveToWindowsNodes)
@@ -931,7 +873,6 @@ namespace TaskList
             }
         }
 
-        
         /* NODES */
 
         public TreeNode CreateNode(IntPtr handle, string title = null, string runCommand = null, TreeNode parent = null, bool isFolder = false, bool isWindow = false, bool isInactiveWindow = false, bool isNote = false, bool isLink = false)
@@ -1001,19 +942,17 @@ namespace TaskList
             {
                 node.ForeColor = windowColor;
                 nodeData.isWindow = true;
+                nodeData.runCommand = runCommand;
                 allWindowsNodes.Add(node);
 
                 if (handle != IntPtr.Zero) {
                     nodeData.handle = handle;
-                    nodeData.isCurrentApp = (this.Handle == nodeData.handle);                    
-
-                    if (nodeData.handle != null)
-                    {
-                        nodeData.title = TaskManager.getWindowTitle(handle);
-                    }
+                    nodeData.isCurrentApp = (this.Handle == nodeData.handle);
+                    nodeData.title = title;
 
                     nodeData.image = TaskManager.GetSmallWindowIcon(nodeData.handle);
                     nodeData.imageBase = ImageManager.ImageToString(nodeData.image);
+
                     this.imageList.Images.Add("image" + this.lastImageIndex, (Image)nodeData.image);                    
                     nodeData.imageIndex = this.lastImageIndex++;
                     node.ImageIndex = nodeData.imageIndex;
@@ -1073,6 +1012,7 @@ namespace TaskList
 
         public void getNodes(List<TreeNode> nodes, TreeNode node, int level = 100)
         {
+            Log.write("getNodes");
             if (level == 0) return;
             nodes.Add(node);
             foreach (TreeNode child in node.Nodes)
@@ -1083,6 +1023,7 @@ namespace TaskList
 
         public void restoreNodes(List<TreeNode> list, TreeNode parent, int level = 100)
         {
+            Log.write("restoreNodes");
             if (level == 0) return;
             NodeDataModel parentData = (NodeDataModel)parent.Tag;
 
@@ -1097,7 +1038,6 @@ namespace TaskList
                 }
             }
         }
-
 
         /* TREEVIEW EVENTS */
 
@@ -1202,11 +1142,22 @@ namespace TaskList
             }
         }
 
+        private void treeView_DrawNode(object sender, DrawTreeNodeEventArgs e)
+        {
+            Log.write("treeView_DrawNode");
+            if (e.Node == null) return;
+
+            var font = e.Node.NodeFont ?? e.Node.TreeView.Font;
+            SolidBrush myBrush = new SolidBrush(e.Node == treeView.SelectedNode ? Color.FromArgb(204, 204, 255) : SystemColors.Control);
+            e.Graphics.FillRectangle(myBrush, e.Bounds);
+            TextRenderer.DrawText(e.Graphics, e.Node.Text, font, e.Bounds, e.Node.ForeColor, TextFormatFlags.GlyphOverhangPadding);
+        }
 
         /* TREEVIEW EXPAND */
 
         private void treeView_AfterExpand(object sender, TreeViewEventArgs e)
         {
+            Log.write("treeView_AfterExpand");
             TreeNode node = e.Node;
 
             if (node == null)
@@ -1226,6 +1177,7 @@ namespace TaskList
 
         private void treeView_AfterCollapse(object sender, TreeViewEventArgs e)
         {
+            Log.write("treeView_AfterCollapse");
             TreeNode node = e.Node;
 
             if (node == null)
@@ -1496,6 +1448,7 @@ namespace TaskList
 
         private void contextMenuStrip_Opening(object sender, CancelEventArgs e)
         {
+            Log.write("contextMenuStrip_Opening");
             TreeNode node = treeView.SelectedNode;
 
             if (node == null) {
@@ -1569,21 +1522,6 @@ namespace TaskList
             );
 
             treeView.SelectedNode.Expand();
-        }
-
-        private void closeToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            Log.write("closeToolStripMenuItem_Click");
-            if (treeView.SelectedNode == null)
-            {
-                return;
-            }
-
-            NodeDataModel nodeData = (NodeDataModel)treeView.SelectedNode.Tag;
-
-            if (nodeData.handle != IntPtr.Zero) {
-                TaskManager.CloseWindow(nodeData.handle);
-            }
         }
 
         private void renameToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1663,8 +1601,94 @@ namespace TaskList
                 nodeData.isPinned = !nodeData.isPinned;
             }
         }
-        
-        /* MENU EVENTS */
+
+        /* MENU FILE */
+
+        private void closeToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Log.write("closeToolStripMenuItem_Click");
+            if (treeView.SelectedNode == null)
+            {
+                return;
+            }
+
+            NodeDataModel nodeData = (NodeDataModel)treeView.SelectedNode.Tag;
+
+            if (nodeData.handle != IntPtr.Zero)
+            {
+                TaskManager.CloseWindow(nodeData.handle);
+            }
+        }
+
+        /* MENU SETTINGS */
+
+        private void settingsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Log.write("settingsToolStripMenuItem_Click");
+            System.Diagnostics.Process.Start("control", "desk.cpl");
+        }
+
+        private void controlPanelToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Log.write("controlPanelToolStripMenuItem_Click");
+            System.Diagnostics.Process.Start("control");
+        }
+
+        private void programAndFeaturesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Log.write("programAndFeaturesToolStripMenuItem_Click");
+            System.Diagnostics.Process.Start("control", "appwiz.cpl");
+        }
+
+        private void systemPropertiesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Log.write("systemPropertiesToolStripMenuItem_Click");
+            System.Diagnostics.Process.Start("control", "sysdm.cpl");
+        }
+
+        private void soundToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Log.write("soundToolStripMenuItem_Click");
+            System.Diagnostics.Process.Start("control", "mmsys.cpl");
+        }
+
+        private void networkConnectionsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Log.write("networkConnectionsToolStripMenuItem_Click");
+            System.Diagnostics.Process.Start("control", "ncpa.cpl");
+        }
+
+        private void internetPropertiesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Log.write("internetPropertiesToolStripMenuItem_Click");
+            System.Diagnostics.Process.Start("control", "inetcpl.cpl");
+        }
+
+        private void powerOptionsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Log.write("powerOptionsToolStripMenuItem_Click");
+            System.Diagnostics.Process.Start("control", "powercfg.cpl");
+        }
+
+        private void securityToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Log.write("securityToolStripMenuItem_Click");
+            System.Diagnostics.Process.Start("control", "wscui.cpl");
+        }
+
+        private void deviceManagerToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Log.write("deviceManagerToolStripMenuItem_Click");
+            System.Diagnostics.Process.Start("control", "hdwwiz.cpl");
+        }
+
+        private void dateAndTimeToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Log.write("dateAndTimeToolStripMenuItem_Click");
+            System.Diagnostics.Process.Start("control", "timedate.cpl");
+        }
+
+        /* MENU SYSTEM */
 
         private void lockToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -1672,16 +1696,16 @@ namespace TaskList
             SystemManager.Lock();
         }
 
-        private void sleepToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            Log.write("sleepToolStripMenuItem_Click");
-            Application.SetSuspendState(PowerState.Suspend, true, true);
-        }
-
         private void signOutToolStripMenuItem_Click(object sender, EventArgs e)
         {
             Log.write("signOutToolStripMenuItem_Click");
             SystemManager.SignOut();
+        }
+
+        private void sleepToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Log.write("sleepToolStripMenuItem_Click");
+            Application.SetSuspendState(PowerState.Suspend, true, true);
         }
 
         private void hibernateToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1701,6 +1725,46 @@ namespace TaskList
             Log.write("shutdownToolStripMenuItem_Click");
             SystemManager.ShutDown();
         }
+
+        /* MENU VOLUME */
+
+        private void muteToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Log.write("muteToolStripMenuItem_Click");
+            SystemManager.soundMute(this.Handle);
+        }
+
+        private void toolStripMenuItem2_Click(object sender, EventArgs e)
+        {
+            Log.write("toolStripMenuItem2_Click");
+            SystemManager.soundLevel(25);
+        }
+
+        private void toolStripMenuItem3_Click(object sender, EventArgs e)
+        {
+            Log.write("toolStripMenuItem3_Click");
+            SystemManager.soundLevel(50);
+        }
+
+        private void toolStripMenuItem4_Click(object sender, EventArgs e)
+        {
+            Log.write("toolStripMenuItem4_Click");
+            SystemManager.soundLevel(75);
+        }
+
+        private void toolStripMenuItem5_Click(object sender, EventArgs e)
+        {
+            Log.write("toolStripMenuItem5_Click");
+            SystemManager.soundLevel(100);
+        }
+
+        private void soundToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            Log.write("soundToolStripMenuItem1_Click");
+            System.Diagnostics.Process.Start("control", "mmsys.cpl");
+        }
+
+        /* MENU OPTIONS */
 
         public void setTopMost(bool chcecked)
         {
@@ -1781,122 +1845,13 @@ namespace TaskList
             }
         }
 
+        /* MENU SHOW DESKTOP */
+
         private void showDesktopToolStripMenuItem_Click(object sender, EventArgs e)
         {
             Log.write("showDesktopToolStripMenuItem_Click");
-            TaskManager.ShowDesktop();
+            TaskManager.ShowDesktop(windowsList, this.Handle);
         }
 
-        private void muteToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            SystemManager.soundMute(this.Handle);
-        }
-
-        private void toolStripMenuItem2_Click(object sender, EventArgs e)
-        {
-            SystemManager.soundLevel(25);
-        }
-
-        private void toolStripMenuItem3_Click(object sender, EventArgs e)
-        {
-            SystemManager.soundLevel(50);
-        }
-
-        private void toolStripMenuItem4_Click(object sender, EventArgs e)
-        {
-            SystemManager.soundLevel(75);
-        }
-
-        private void toolStripMenuItem5_Click(object sender, EventArgs e)
-        {
-            SystemManager.soundLevel(100);
-        }
-
-        private void treeView_KeyUp(object sender, KeyEventArgs e)
-        {
-
-        }
-
-
-        private void treeView_Validating(object sender, System.ComponentModel.CancelEventArgs e)
-        {
-
-        }
-
-        private void treeView_AfterSelect(object sender, TreeViewEventArgs e)
-        {
-
-        }
-
-        private void treeView_DrawNode(object sender, DrawTreeNodeEventArgs e)
-        {
-            if (e.Node == null) return;
-
-            var font = e.Node.NodeFont ?? e.Node.TreeView.Font;
-            SolidBrush myBrush = new SolidBrush(e.Node == treeView.SelectedNode ? Color.FromArgb(204, 204, 255):SystemColors.Control);
-            e.Graphics.FillRectangle(myBrush, e.Bounds);
-            TextRenderer.DrawText(e.Graphics, e.Node.Text, font, e.Bounds, e.Node.ForeColor, TextFormatFlags.GlyphOverhangPadding);
-        }
-
-        private void controlPanelToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            System.Diagnostics.Process.Start("control");
-        }
-
-        private void programAndFeaturesToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            System.Diagnostics.Process.Start("control", "appwiz.cpl");
-        }
-
-        private void deviceManagerToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            System.Diagnostics.Process.Start("control", "hdwwiz.cpl");            
-        }
-
-        private void internetPropertiesToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-
-            System.Diagnostics.Process.Start("control", "inetcpl.cpl");
-        }
-
-        private void soundToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            System.Diagnostics.Process.Start("control", "mmsys.cpl");
-        }
-
-        private void soundToolStripMenuItem1_Click(object sender, EventArgs e)
-        {
-            System.Diagnostics.Process.Start("control", "mmsys.cpl");
-        }
-
-        private void networkConnectionsToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            System.Diagnostics.Process.Start("control", "ncpa.cpl");
-        }
-
-        private void powerOptionsToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            System.Diagnostics.Process.Start("control", "powercfg.cpl");
-        }
-
-        private void systemPropertiesToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            System.Diagnostics.Process.Start("control", "sysdm.cpl");
-        }
-
-        private void dateAndTimeToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            System.Diagnostics.Process.Start("control", "timedate.cpl");
-        }
-
-        private void securityToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            System.Diagnostics.Process.Start("control", "wscui.cpl");
-        }
-
-        private void settingsToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            System.Diagnostics.Process.Start("control", "desk.cpl");
-        }
     }
 }

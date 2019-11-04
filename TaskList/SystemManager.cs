@@ -138,7 +138,7 @@ namespace TaskList
         {
             if (Directory.Exists(path))
             {
-                Process.Start("explorer.exe", "/select, \"" + path +"\"");
+                Process.Start("explorer.exe", "\"" + path +"\"");
             }
         }
         /********************************************************************/

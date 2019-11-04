@@ -442,10 +442,31 @@ namespace TaskList
 
                 NodeDataModel nodeData = (NodeDataModel)node.Tag;
 
+                
+
                 if (nodeData.isWindow)
                 {
-                    nodeData.isWindow = false;
-                    nodeData.isInactiveWindow = true;
+                    if (!this.options.rememberState && !nodeData.isPinned)
+                    {
+                        nodeData.runCommand = null;
+
+                        if (node.Nodes.Count > 0)
+                        {
+                            nodeData.isWindow = false;
+                            nodeData.isInactiveWindow = false;
+                            nodeData.isFolder = true;
+                        }
+                        else 
+                        {
+                            continue;
+                        }
+                    }
+                    else
+                    {
+
+                        nodeData.isWindow = false;
+                        nodeData.isInactiveWindow = true;
+                    }
                 }
 
                 nodeElement.Add(new XElement("id", nodeData.id));

@@ -13,9 +13,9 @@ namespace TaskList
         public bool Maximised = false;
         public bool Minimised = false;
         public bool firstRun = true;
-        public bool mostTop = false;
+        public bool mostTop = true;
         public string font = null;
-        public bool rememberState = false;
-        public bool ShowInTaskbar = true;
+        public bool rememberState = true;
+        public bool ShowInTaskbar = false;
     }
 }

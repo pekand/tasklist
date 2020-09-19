@@ -1874,5 +1874,9 @@ namespace TaskList
             TaskManager.ShowDesktop(windowsList, this.Handle);
         }
 
+        private void toolTip1_Popup(object sender, PopupEventArgs e)
+        {
+
+        }
     }
 }

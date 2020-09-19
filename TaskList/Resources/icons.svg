@@ -25,9 +25,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.98994949"
-     inkscape:cx="34.011934"
-     inkscape:cy="210.80386"
+     inkscape:zoom="15.839192"
+     inkscape:cx="30.473713"
+     inkscape:cy="1030.5253"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -90,29 +90,17 @@
     <rect
        style="fill:none;fill-opacity:1;stroke:none"
        id="rect4136"
-       width="256"
-       height="256"
-       x="77.142807"
-       y="733.50507"
+       width="16"
+       height="16"
+       x="16.533653"
+       y="11.839835"
        ry="0"
-       inkscape:export-xdpi="5.625"
-       inkscape:export-ydpi="5.625" />
-    <rect
-       style="fill:#ffcc00;fill-opacity:1;stroke:none"
-       id="rect4138"
-       width="184.35284"
-       height="138.3909"
-       x="111.62186"
-       y="807.40021"
-       inkscape:export-xdpi="5.625"
-       inkscape:export-ydpi="5.625" />
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90"
+       inkscape:export-filename="C:\Users\root\Desktop\rect4140.png" />
     <path
        style="fill:#ffcc00;fill-opacity:1;stroke:none"
-       d="m 111.62186,771.03473 68.42895,0 24,37.37564 -92.42895,0 z"
-       id="rect4140"
-       inkscape:connector-curvature="0"
-       sodipodi:nodetypes="ccccc"
-       inkscape:export-xdpi="5.625"
-       inkscape:export-ydpi="5.625" />
+       d="M 18.689453 14.185547 L 18.689453 16.458984 L 18.689453 16.521484 L 18.689453 25.107422 L 30.210938 25.107422 L 30.210938 16.458984 L 24.423828 16.458984 L 22.964844 14.185547 L 18.689453 14.185547 z "
+       id="rect4138" />
   </g>
 </svg>

@@ -15,6 +15,7 @@ namespace TaskList
         public static string logFileName = String.Format("log\\{0}-log.txt", DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss"));
 #endif
 
+        //LOG_WRITE
         public static void write(string text = "") {
 #if DEBUG
             if (text == lastMessage) { // remove duplicite messages

@@ -45,6 +45,11 @@ namespace TaskList
         public Color folderColor = Color.FromArgb(0, 0, 0);
         public Color noteColor = Color.FromArgb(0, 0, 0);
 
+        private Image defaultIcon = null;
+        private Image folderIcon = null;
+        private Image noteIcon = null;
+        private Image systemfolderIcon = null;
+
         /* FORM EVENTS */
 
         public TaskListForm()
@@ -52,6 +57,27 @@ namespace TaskList
 
             Log.write("Constructor");
             InitializeComponent();
+        }
+
+        private void LoadIcons() {
+            this.imageList.ImageSize = new System.Drawing.Size(16, 16);
+            treeView.ImageList = this.imageList;
+
+            this.defaultIcon = new Bitmap(System.Reflection.Assembly.GetEntryAssembly().GetManifestResourceStream("TaskList.Resources.TaskList.ico"));
+            this.defaultIconIndex = this.lastImageIndex++;
+            this.imageList.Images.Add("image" + this.defaultIconIndex, defaultIcon);
+
+            this.folderIcon = new Bitmap(System.Reflection.Assembly.GetEntryAssembly().GetManifestResourceStream("TaskList.Resources.folder.ico"));
+            this.folderIconIndex = this.lastImageIndex++;
+            this.imageList.Images.Add("image" + this.folderIconIndex, folderIcon);
+
+            this.noteIcon = new Bitmap(System.Reflection.Assembly.GetEntryAssembly().GetManifestResourceStream("TaskList.Resources.note.ico"));
+            this.noteIconIndex = this.lastImageIndex++;
+            this.imageList.Images.Add("image" + this.noteIconIndex, noteIcon);
+
+            this.systemfolderIcon = new Bitmap(System.Reflection.Assembly.GetEntryAssembly().GetManifestResourceStream("TaskList.Resources.systemfolder.ico"));
+            this.systemFolderIconIndex = this.lastImageIndex++;
+            this.imageList.Images.Add("image" + this.systemFolderIconIndex, systemfolderIcon);
         }
 
         private void TaskList_Load(object sender, EventArgs e)
@@ -62,28 +88,9 @@ namespace TaskList
             this.Text += " - DEBUG";
 #endif
 
-            
+            this.LoadIcons();
 
-            this.imageList.ImageSize = new System.Drawing.Size(16, 16);
-            treeView.ImageList = this.imageList;
-
-            Image defaultIcon = new Bitmap(System.Reflection.Assembly.GetEntryAssembly().GetManifestResourceStream("TaskList.Resources.TaskList.ico"));
-            this.defaultIconIndex = this.lastImageIndex++;
-            this.imageList.Images.Add("image" + this.defaultIconIndex, defaultIcon);
-
-            Image folderIcon = new Bitmap(System.Reflection.Assembly.GetEntryAssembly().GetManifestResourceStream("TaskList.Resources.folder.ico"));
-            this.folderIconIndex = this.lastImageIndex++;
-            this.imageList.Images.Add("image" + this.folderIconIndex, folderIcon);
-
-            Image noteIcon = new Bitmap(System.Reflection.Assembly.GetEntryAssembly().GetManifestResourceStream("TaskList.Resources.note.ico"));
-            this.noteIconIndex = this.lastImageIndex++;
-            this.imageList.Images.Add("image" + this.noteIconIndex, noteIcon);
-
-            Image systemfolderIcon = new Bitmap(System.Reflection.Assembly.GetEntryAssembly().GetManifestResourceStream("TaskList.Resources.systemfolder.ico"));
-            this.systemFolderIconIndex = this.lastImageIndex++;
-            this.imageList.Images.Add("image" + this.systemFolderIconIndex, systemfolderIcon);
-
-
+            treeView.BeginUpdate();
 
             this.restoreFormSettings();
 
@@ -124,9 +131,7 @@ namespace TaskList
                 this.rootNode.Nodes.Add(this.windowsRootNode);
             }
 
-            this.updateTree();
-
-            treeView.BeginUpdate();
+            this.updateTree();            
 
             if (rootNode != null) {
                 treeView.Nodes.Add(rootNode);
@@ -137,7 +142,6 @@ namespace TaskList
             treeView.EndUpdate();
 
             autorunToolStripMenuItem.Checked = SystemManager.isAutorunSet();
-
 
             this.updateTimer.Enabled = true;
         }
@@ -1004,31 +1008,41 @@ namespace TaskList
         public void RemoveNode(TreeNode node)
         {
             Log.write("RemoveNode");
-            List<TreeNode> subnodes = new List<TreeNode>();
 
-            getNodes(subnodes, node);
+            if (node == null) {
+                return;
+            }
 
-            foreach (TreeNode n in subnodes)
-            {
-                if (n == rootNode || n == windowsRootNode)
+            if (node.Nodes != null && node.Nodes.Count > 0) {
+                List<TreeNode> nodes = new List<TreeNode>();
+
+                foreach (TreeNode child in node.Nodes)
                 {
-                    return;
+                    nodes.Add(child);
+                }
+
+                foreach (TreeNode child in nodes)
+                {
+                    this.RemoveNode(child);
                 }
             }
 
-            subnodes.Reverse();
-
-            foreach (TreeNode n in subnodes)
-            {
-                allWindowsNodes.Remove(node);
-                allInactiveWindowsNodes.Remove(node);
-                allFolderNodes.Remove(node);
-                allNoteNodes.Remove(node);
-                allLinkNodes.Remove(node);
-                allNodes.Remove(node);
-                n.Remove();
+            if (node.Nodes != null && node.Nodes.Count != 0) {
+                return;
             }
 
+            if (node == rootNode || node == windowsRootNode)
+            {
+                return;
+            }
+
+            allWindowsNodes.Remove(node);
+            allInactiveWindowsNodes.Remove(node);
+            allFolderNodes.Remove(node);
+            allNoteNodes.Remove(node);
+            allLinkNodes.Remove(node);
+            allNodes.Remove(node);
+            node.Remove();
         }
 
         public void getNodes(List<TreeNode> nodes, TreeNode node, int level = 100)
@@ -1216,6 +1230,16 @@ namespace TaskList
             nodeData.isExpanded = false;
         }
 
+        /* KEYBOARD EVENTS */
+
+        private void treeView_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.F2 && treeView.SelectedNode != null)
+            {
+                treeView.LabelEdit = true;
+                treeView.SelectedNode.BeginEdit();
+            }
+        }
 
         /* DRAG AND DROP EVENTS */
 
@@ -1355,6 +1379,7 @@ namespace TaskList
                     {
                         targetNode.Nodes.Add(linkNode);
                         targetNode.Expand();
+                        linkNodeData.parent = targetNodeData.id;
                     }
 
                     if (addNodeDown && !targetNodeData.isRoot)
@@ -1502,8 +1527,8 @@ namespace TaskList
 
 
             TreeNode parentNode = treeView.SelectedNode;
-                        
-            this.CreateNode(
+
+            TreeNode newFolderNode = this.CreateNode(
                 IntPtr.Zero,
                 "Folder",
                 null,
@@ -1516,6 +1541,9 @@ namespace TaskList
             );
 
             treeView.SelectedNode.Expand();
+            treeView.SelectedNode = newFolderNode;
+            treeView.LabelEdit = true;
+            treeView.SelectedNode.BeginEdit();
         }
 
         private void noteToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1592,6 +1620,24 @@ namespace TaskList
             e.Node.EndEdit(true);
             treeView.LabelEdit = false;
 
+        }
+
+        private void hiddeToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+            Log.write("hiddeToolStripMenuItem_Click");
+
+            if (treeView.SelectedNode == null || (treeView.SelectedNode.Nodes != null && treeView.SelectedNode.Nodes.Count > 0))
+            {
+                return;
+            }
+
+
+            RemoveNode(treeView.SelectedNode);
+
+            NodeDataModel nodeData = (NodeDataModel)treeView.SelectedNode.Tag;
+
+            nodeData.isHidden = true;            
         }
 
         private void deleteToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1872,11 +1918,6 @@ namespace TaskList
         {
             Log.write("showDesktopToolStripMenuItem_Click");
             TaskManager.ShowDesktop(windowsList, this.Handle);
-        }
-
-        private void toolTip1_Popup(object sender, PopupEventArgs e)
-        {
-
         }
     }
 }

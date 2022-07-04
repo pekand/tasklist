@@ -16,6 +16,7 @@ namespace TaskList
     public class WindowData
     {
         public IntPtr handle = IntPtr.Zero;
+        public IntPtr parent = IntPtr.Zero;
         public string title = null;
         public Image image = null;
         public string imageBase = null;
@@ -65,6 +66,12 @@ namespace TaskList
             long style = (long)GetWindowLongPtr(hHandle, -16);
             bool isPopup = ((style & WS_POPUP) != 0);
             return isPopup;
+        }
+
+        public static IntPtr getParent(IntPtr hHandle)
+        {
+            IntPtr parent = (IntPtr)GetWindowLongPtr(hHandle, -8);
+            return parent;
         }
 
 
@@ -174,6 +181,7 @@ namespace TaskList
                 try
                 {
                     if (!windowData.dataSet) {
+                        windowData.parent = TaskManager.getParent(windowData.handle);
                         windowData.image = TaskManager.GetSmallWindowIcon(windowData.handle);
                         windowData.imageBase = ImageManager.ImageToString(windowData.image);
                         windowData.process = TaskManager.getProcessFromHandle(windowData.handle);

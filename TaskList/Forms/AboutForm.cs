@@ -8,6 +8,9 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Microsoft.Win32;
+using System.IO;
+using System.Reflection;
+using System.Text.RegularExpressions;
 
 namespace TaskList
 {
@@ -18,7 +21,7 @@ namespace TaskList
             InitializeComponent();
         }
 
-        private void getVersion() {
+        private string getVersion() {
             try
             {
                 using (RegistryKey key = Registry.LocalMachine.OpenSubKey("Software\\pekand\\TaskList"))
@@ -29,20 +32,35 @@ namespace TaskList
                         if (o != null)
                         {
                             string version = o as String;
-                            labelVersionNumber.Text = version;
+                            return  version;
                         }
                     }
                 }
             }
             catch (Exception ex)
             {
-                labelVersionNumber.Text = "unknown";
+
             }
+
+            return "unknown";
         }
 
         private void AboutForm_Load(object sender, EventArgs e)
         {
-            this.getVersion();
+            var assembly = Assembly.GetExecutingAssembly();
+            var resourceName = assembly.GetManifestResourceNames().Single(str => str.EndsWith("info.txt"));
+
+            string result = "";
+            using (Stream stream = assembly.GetManifestResourceStream(resourceName))
+            using (StreamReader reader = new StreamReader(stream))
+            {
+                result = reader.ReadToEnd();
+            }
+            string[] lines = Regex.Split(result, "\n");
+
+            labelVersionNumber.Text = lines[0].Trim();
+            labelBranch.Text = lines[1].Trim();
+            labelEnv.Text = lines[2].Trim();
         }
     }
 }

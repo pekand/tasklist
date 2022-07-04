@@ -12,6 +12,15 @@ using System.Xml.Linq;
 
 namespace TaskList
 {
+    /*
+ #if DEBUG
+            this.treeView = new System.Windows.Forms.TreeView();
+#else
+            this.treeView = new CustomTreeView();            
+#endif
+    */
+
+
     public partial class TaskListForm : Form
     {
         public OptionsModel options = new OptionsModel();
@@ -187,7 +196,7 @@ namespace TaskList
             {
 
                 //skip current app
-                if (this.Handle == window.handle)
+                if (this.Handle == window.handle || this.Handle == window.parent)
                 {
                     continue;
                 }
@@ -1133,7 +1142,7 @@ namespace TaskList
 
             if (e.Button == MouseButtons.Left)
             {
-                if (nodeData.isLink && nodeData.runCommand != "")
+                if (nodeData.runCommand != "")
                 {
                     if (File.Exists(nodeData.runCommand))
                     {
@@ -1289,21 +1298,23 @@ namespace TaskList
             Pen customPen = new Pen(Color.DimGray, 3) { DashStyle = DashStyle.Dash };
             Pen customPen2 = new Pen(SystemColors.Control, 3);
 
-            g.DrawLine(customPen2, new Point(0, targetNode.Bounds.Top + 1), new Point(treeView.Width - 4, targetNode.Bounds.Top + 1));
-            g.DrawLine(customPen2, new Point(0, targetNode.Bounds.Bottom - 1), new Point(treeView.Width - 4, targetNode.Bounds.Bottom - 1));
 
             if (addNodeUp)
             {
+                g.DrawLine(customPen2, new Point(0, targetNode.Bounds.Bottom - 1), new Point(treeView.Width - 4, targetNode.Bounds.Bottom - 1));
                 g.DrawLine(customPen, new Point(0, targetNode.Bounds.Top+1), new Point(treeView.Width - 4, targetNode.Bounds.Top+1));
+                
             }
 
             if (addNodeIn)
             {
-                
+                g.DrawLine(customPen2, new Point(0, targetNode.Bounds.Top + 1), new Point(treeView.Width - 4, targetNode.Bounds.Top + 1));
+                g.DrawLine(customPen2, new Point(0, targetNode.Bounds.Bottom - 1), new Point(treeView.Width - 4, targetNode.Bounds.Bottom - 1));
             }
 
             if (addNodeDown)
             {
+                g.DrawLine(customPen2, new Point(0, targetNode.Bounds.Top + 1), new Point(treeView.Width - 4, targetNode.Bounds.Top + 1));
                 g.DrawLine(customPen, new Point(0, targetNode.Bounds.Bottom-1), new Point(treeView.Width - 4, targetNode.Bounds.Bottom-1));
             }
 
@@ -1428,25 +1439,14 @@ namespace TaskList
                 {
                     int previousNodeIndex = targetNode.Parent.Nodes.IndexOf(targetNode) - 1;
 
-                    // mov to nodebefore target node as last child
-                    if (previousNodeIndex >=0 && targetNode.Parent.Nodes[previousNodeIndex].Nodes.Count > 0 && targetNode.Parent.Nodes[previousNodeIndex].IsExpanded)
+                    // move before target node
+                    if (!draggedNode.Equals(targetNode))
                     {
-                        TreeNode previousNode = targetNode.Parent.Nodes[previousNodeIndex];
+                        TreeNode targetParentNode = targetNode.Parent;
                         draggedNode.Remove();
-                        previousNode.Nodes.Add(draggedNode);
-                        draggedNodeData.parent = ((NodeDataModel)targetNode.Parent.Nodes[previousNodeIndex].Tag).id;
-                        
-                    }
-                    else
-                    {
-                        // move before target node
-                        if (!draggedNode.Equals(targetNode)) {
-                            TreeNode targetParentNode = targetNode.Parent;
-                            draggedNode.Remove();
-                            int targetNodePosition = targetParentNode.Nodes.IndexOf(targetNode);
-                            targetParentNode.Nodes.Insert(targetNodePosition, draggedNode);
-                            draggedNodeData.parent = ((NodeDataModel)targetParentNode.Tag).id;
-                        }
+                        int targetNodePosition = targetParentNode.Nodes.IndexOf(targetNode);
+                        targetParentNode.Nodes.Insert(targetNodePosition, draggedNode);
+                        draggedNodeData.parent = ((NodeDataModel)targetParentNode.Tag).id;
                     }
                 }
 
@@ -1462,26 +1462,15 @@ namespace TaskList
 
                 if (addNodeDown && !targetNodeData.isRoot)
                 {
-                    // move to target child node as firs child
-                    if (targetNode.Nodes.Count > 0 && targetNode.IsExpanded)
+
+                    // move after target node
+                    if (!draggedNode.Equals(targetNode))
                     {
+                        TreeNode targetParentNode = targetNode.Parent;
                         draggedNode.Remove();
-                        int targetNodePosition = 0;
-                        targetNode.Nodes.Insert(targetNodePosition, draggedNode);
-                        draggedNodeData.parent = targetNodeData.id;
-                        
-                    }
-                    else
-                    {
-                        // move after target node
-                        if (!draggedNode.Equals(targetNode))
-                        {
-                            TreeNode targetParentNode = targetNode.Parent;
-                            draggedNode.Remove();
-                            int targetNodePosition = targetParentNode.Nodes.IndexOf(targetNode);
-                            targetNode.Parent.Nodes.Insert(targetNodePosition + 1, draggedNode);
-                            draggedNodeData.parent = ((NodeDataModel)targetParentNode.Tag).id;
-                        }
+                        int targetNodePosition = targetParentNode.Nodes.IndexOf(targetNode);
+                        targetNode.Parent.Nodes.Insert(targetNodePosition + 1, draggedNode);
+                        draggedNodeData.parent = ((NodeDataModel)targetParentNode.Tag).id;
                     }
                 }
             }
@@ -1924,6 +1913,11 @@ namespace TaskList
         {
             AboutForm form = new AboutForm();
             form.ShowDialog();
+        }
+
+        private void treeView_AfterSelect(object sender, TreeViewEventArgs e)
+        {
+
         }
     }
 }

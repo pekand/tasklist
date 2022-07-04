@@ -151,7 +151,13 @@
     <EmbeddedResource Include="Resources\folder.ico" />
     <EmbeddedResource Include="Resources\note.ico" />
     <EmbeddedResource Include="Resources\systemfolder.ico" />
+    <EmbeddedResource Include="info.txt" />
     <Content Include="TaskList.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PreBuildEvent>git describe --tags --abbrev=0 &gt; ..\..\info.txt
+git rev-parse --abbrev-ref HEAD &gt;&gt; ..\..\info.txt
+echo $(ConfigurationName) &gt;&gt; ..\..\info.txt</PreBuildEvent>
+  </PropertyGroup>
 </Project>

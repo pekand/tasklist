@@ -1919,5 +1919,11 @@ namespace TaskList
             Log.write("showDesktopToolStripMenuItem_Click");
             TaskManager.ShowDesktop(windowsList, this.Handle);
         }
+
+        private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            AboutForm form = new AboutForm();
+            form.ShowDialog();
+        }
     }
 }

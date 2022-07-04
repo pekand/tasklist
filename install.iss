@@ -14,9 +14,9 @@
 #define MyAppExeName "TaskList.exe"
 
 #define GetRevision() \
-  Local[0] = "/S /C git describe --tags --abbrev=0 > revision.txt", \
+  Local[0] = "/S /C git describe --tags --abbrev=0 > info.txt", \
   Local[1] = Exec("cmd.exe", Local[0], SourcePath, , SW_HIDE), \
-  Local[2] = FileOpen(AddBackslash(SourcePath) + "revision.txt"), \
+  Local[2] = FileOpen(AddBackslash(SourcePath) + "info.txt"), \
   Local[3] = FileRead(Local[2]), \
   FileClose(Local[2]), \
   Local[3] 

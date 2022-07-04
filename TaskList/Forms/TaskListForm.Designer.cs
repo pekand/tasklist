@@ -80,9 +80,9 @@
             this.toolStripMenuItemHelp = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tableLayoutPanel = new System.Windows.Forms.TableLayoutPanel();
+            this.treeView = new TaskList.CustomTreeView();
             this.fontDialog = new System.Windows.Forms.FontDialog();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-            this.treeView = new TaskList.CustomTreeView();
             this.contextMenuStrip.SuspendLayout();
             this.menuStrip.SuspendLayout();
             this.tableLayoutPanel.SuspendLayout();
@@ -90,6 +90,7 @@
             // 
             // updateTimer
             // 
+            this.updateTimer.Interval = 333;
             this.updateTimer.Tick += new System.EventHandler(this.update_Tick);
             // 
             // contextMenuStrip
@@ -471,7 +472,7 @@
             // aboutToolStripMenuItem
             // 
             this.aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
-            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(107, 22);
             this.aboutToolStripMenuItem.Text = "About";
             this.aboutToolStripMenuItem.Click += new System.EventHandler(this.aboutToolStripMenuItem_Click);
             // 

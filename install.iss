@@ -60,6 +60,6 @@ Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: 
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
 
-[Registry]
-Root: HKLM; Subkey: "Software\pekand"; Flags: uninsdeletekey
-Root: HKLM; Subkey: "Software\pekand\TaskList"; Flags: uninsdeletekey; ValueType: string; ValueName: "version"; ValueData: "{#GetRevision()}"
+;[Registry]
+;Root: HKLM; Subkey: "Software\pekand"; Flags: uninsdeletekey
+;Root: HKLM; Subkey: "Software\pekand\TaskList"; Flags: uninsdeletekey; ValueType: string; ValueName: "version"; ValueData: "{#GetRevision()}"

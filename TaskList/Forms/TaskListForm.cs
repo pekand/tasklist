@@ -59,6 +59,8 @@ namespace TaskList
         private Image noteIcon = null;
         private Image systemfolderIcon = null;
 
+        private List<ExcludeRule> excludeRules = new List<ExcludeRule>();
+
         /* FORM EVENTS */
 
         public TaskListForm()
@@ -1918,6 +1920,18 @@ namespace TaskList
         private void treeView_AfterSelect(object sender, TreeViewEventArgs e)
         {
 
+        }
+
+        private void addTaskExcludeRuleToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ExcludeRule excludeRule = new ExcludeRule();
+            ExcludeRuleEditForm form = new ExcludeRuleEditForm();
+            form.hideDeleteButton();
+            form.ShowDialog();
+
+            if (form.ok) {
+                this.excludeRules.Add(form.excludeRule);
+            }
         }
     }
 }

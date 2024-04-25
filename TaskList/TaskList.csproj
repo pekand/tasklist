@@ -78,8 +78,15 @@
     <Compile Include="Forms\AboutForm.Designer.cs">
       <DependentUpon>AboutForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\ExcludeRuleEditForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\ExcludeRuleEditForm.Designer.cs">
+      <DependentUpon>ExcludeRuleEditForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Managers\ImageManager.cs" />
     <Compile Include="Log.cs" />
+    <Compile Include="Models\ExcludeRule.cs" />
     <Compile Include="Models\OptionsModel.cs" />
     <Compile Include="Managers\SerializationManager.cs" />
     <Compile Include="Managers\SystemManager.cs" />
@@ -96,6 +103,9 @@
     <Compile Include="Managers\FormManager.cs" />
     <EmbeddedResource Include="Forms\AboutForm.resx">
       <DependentUpon>AboutForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\ExcludeRuleEditForm.resx">
+      <DependentUpon>ExcludeRuleEditForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\TaskListForm.resx">
       <DependentUpon>TaskListForm.cs</DependentUpon>

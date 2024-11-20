@@ -68,6 +68,15 @@ namespace TaskList
             return isPopup;
         }
 
+        private const int GWL_EXSTYLE = -20;
+        private const int WS_EX_TOOLWINDOW = 0x00000080;
+
+        public static bool IsToolWindow(IntPtr hWnd)
+        {
+            IntPtr exStyle = GetWindowLongPtr(hWnd, GWL_EXSTYLE);
+            return (exStyle.ToInt64() & WS_EX_TOOLWINDOW) == WS_EX_TOOLWINDOW;
+        }
+
         public static IntPtr getParent(IntPtr hHandle)
         {
             IntPtr parent = (IntPtr)GetWindowLongPtr(hHandle, -8);
@@ -115,6 +124,7 @@ namespace TaskList
         public static void GetOpenWindows(List<WindowData> windowsList, List<WindowData> newWindowsList)
         {
             Log.write("TaskManager GetOpenWindows");
+
             IntPtr shellWindow = GetShellWindow();
             List<IntPtr> windowsHandles = new List<IntPtr>();
 
@@ -132,9 +142,14 @@ namespace TaskList
                 if (!IsWindowVisible(IntPtr))
                     return true;
 
-                /*if (IsWindowPopup(IntPtr)) {
+                if (IsWindowPopup(IntPtr)) {
                     return true;
-                }*/
+                }
+
+                if (IsToolWindow(IntPtr))
+                {
+                    return true;
+                }
 
                 if (isCloacked(IntPtr)) // skip window store hidden apps
                     return true;
@@ -176,21 +191,42 @@ namespace TaskList
                 windowsList.Remove(windowData);
             }
 
-            foreach (WindowData windowData in windowsList)
+            foreach (WindowData windowData in newWindowsList)
             {
                 try
                 {
                     if (!windowData.dataSet) {
+                        windowData.dataSet = true;
                         windowData.parent = TaskManager.getParent(windowData.handle);
                         windowData.image = TaskManager.GetSmallWindowIcon(windowData.handle);
                         windowData.imageBase = ImageManager.ImageToString(windowData.image);
                         windowData.process = TaskManager.getProcessFromHandle(windowData.handle);
-                        windowData.path = windowData.process != null ? windowData.process.MainModule.FileName : null;
-                        windowData.dataSet = true;
-                    }
+                        try
+                        {
+                            windowData.path = TaskManager.GetExecutablePathFromHandle(windowData.handle);
+                        }
+                        catch (Exception e)
+                        {
+                            windowData.path = null;
+                            Log.write(e.Message);
+                        }
 
+                        
+                    }
+                }
+                catch (Exception e)
+                {
+                    Log.write(e.Message);
+                }
+            }
+
+            foreach (WindowData windowData in windowsList)
+            {
+                try
+                {
                     string windowTitle = getWindowTitle(windowData.handle);
-                    if (windowTitle != windowData.title) {
+                    if (windowTitle != windowData.title)
+                    {
                         windowData.title = windowTitle;
                     }
                 }
@@ -459,6 +495,59 @@ namespace TaskList
             }
 
             return windows;
+        }
+
+        const uint PROCESS_QUERY_LIMITED_INFORMATION = 0x1000;
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        static extern IntPtr OpenProcess(uint processAccess, bool bInheritHandle, uint processId);
+
+
+        [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        static extern bool QueryFullProcessImageName(IntPtr hProcess, int dwFlags, StringBuilder lpExeName, ref int lpdwSize);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        static extern bool CloseHandle(IntPtr hHandle);
+
+        public static string GetExecutablePathFromHandle(IntPtr hwnd)
+        {
+            // Step 1: Get the process ID from the window handle
+            if (GetWindowThreadProcessId(hwnd, out uint pid) == 0)
+            {
+                Console.WriteLine("Failed to get process ID.");
+                return null;
+            }
+
+
+
+            // Step 2: Open the process with QUERY_LIMITED_INFORMATION rights
+            IntPtr hProcess = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, false, pid);
+            if (hProcess == IntPtr.Zero)
+            {
+                Console.WriteLine("Failed to open process.");
+                return null;
+            }
+
+            try
+            {
+                // Step 3: Retrieve the executable path
+                StringBuilder exePath = new StringBuilder(1024);
+                int size = exePath.Capacity;
+                if (QueryFullProcessImageName(hProcess, 0, exePath, ref size))
+                {
+                    return exePath.ToString();
+                }
+                else
+                {
+                    Console.WriteLine("Failed to query process image name.");
+                    return null;
+                }
+            }
+            finally
+            {
+                // Ensure the handle is closed to prevent resource leaks
+                CloseHandle(hProcess);
+            }
         }
     }
 }
